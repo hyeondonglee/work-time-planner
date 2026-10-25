@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>근무 전략 플래너 Web V5.1</title>
+<title>근무 전략 플래너 Sync V5.2</title>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
@@ -145,13 +145,23 @@ button.danger:hover{background:#ffe4e6}
   .card.kpi.ot-card{grid-column:1/-1}
 }
 
+
+#cloudPanel input{
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:9px 10px;
+  background:#fff;
+}
+#cloudPanel .sync-ok{color:var(--good)}
+#cloudPanel .sync-bad{color:var(--bad)}
+
 </style>
 </head>
 <body>
 <div class="app">
 <header>
   <div>
-    <h1>근무 전략 플래너 Web V5.1</h1>
+    <h1>근무 전략 플래너 Sync V5.2</h1>
     <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
   </div>
   <div class="nav">
@@ -167,6 +177,27 @@ button.danger:hover{background:#ffe4e6}
 <div id="saveToast" style="display:none;margin:-6px 0 12px;padding:9px 11px;background:#eef8f1;border:1px solid #d6ecdc;border-radius:10px;color:#35734a"></div>
 
 <div id="migrationNotice" class="small" style="display:none;margin:-6px 0 12px;padding:9px 11px;background:#eef8f1;border:1px solid #d6ecdc;border-radius:10px;color:#35734a"></div>
+
+
+<div class="card" id="cloudPanel" style="margin-bottom:14px;padding:12px 14px">
+  <div class="row" style="align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+    <div>
+      <div class="section" style="margin-bottom:2px">클라우드 동기화</div>
+      <div class="small" id="cloudStatus">로그인하면 휴대폰·태블릿·노트북에서 같은 데이터를 사용합니다.</div>
+    </div>
+    <div class="row" id="cloudLoggedOut" style="gap:8px;flex-wrap:wrap">
+      <input id="cloudEmail" type="email" placeholder="이메일" style="min-width:210px">
+      <input id="cloudPassword" type="password" placeholder="비밀번호" style="min-width:160px">
+      <button id="cloudSignIn">로그인</button>
+      <button id="cloudSignUp">처음 가입</button>
+    </div>
+    <div class="row" id="cloudLoggedIn" style="display:none;gap:8px;align-items:center;flex-wrap:wrap">
+      <span class="small" id="cloudUser"></span>
+      <button id="cloudSyncNow">지금 동기화</button>
+      <button id="cloudSignOut">로그아웃</button>
+    </div>
+  </div>
+</div>
 
 <div class="grid">
   <div class="limit-warning" id="limitWarning"></div>
@@ -219,7 +250,9 @@ button.danger:hover{background:#ffe4e6}
         <div class="small" id="actualGross">세전 ₩0</div>
       </div>
     </div>
-    <div class="small" style="margin-top:10px">세후 65% 추정 기준</div>
+    <div class="small" style="margin-top:10px">
+      적용 시급 <strong id="hourlyRateDisplay">₩30,500</strong> · 세후 65% 추정 기준
+    </div>
   </div>
 
   <div class="card wide">
@@ -352,8 +385,18 @@ button.danger:hover{background:#ffe4e6}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 "use strict";
+
+const SUPABASE_URL = "https://uzvvnlgezwngejadrhka.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_GKlxjWeIKj8gVsdvLkgaGg_0VQpfwS0";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let cloudUser = null;
+let cloudSaveTimer = null;
+let cloudSaveInFlight = false;
+let cloudDirty = false;
+
 
 const HOLIDAYS = {
   2026:{
@@ -493,6 +536,36 @@ function loadState(){
 }
 function saveState(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  cloudDirty=true;
+  scheduleCloudSave();
+}
+
+function scheduleCloudSave(){
+  if(!cloudUser) return;
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer=setTimeout(()=>saveStateToCloud(false), 600);
+}
+
+async function saveStateToCloud(showStatus=true){
+  if(!cloudUser || cloudSaveInFlight) return;
+  cloudSaveInFlight=true;
+  try{
+    const {error}=await supabaseClient
+      .from("work_planner_state")
+      .upsert({
+        user_id:cloudUser.id,
+        data:state,
+        updated_at:new Date().toISOString()
+      }, {onConflict:"user_id"});
+    if(error) throw error;
+    cloudDirty=false;
+    if(showStatus) setCloudStatus("클라우드 저장 완료","ok");
+  }catch(err){
+    console.error(err);
+    setCloudStatus("클라우드 저장 실패 · 이 기기에는 계속 저장됨","bad");
+  }finally{
+    cloudSaveInFlight=false;
+  }
 }
 function verifySavedRecord(key,mode,expected){
   try{
@@ -819,6 +892,7 @@ function render(){
 
   document.getElementById("planNet").textContent=money(plan.net);
   document.getElementById("actualNet").textContent=money(actual.net);
+  document.getElementById("hourlyRateDisplay").textContent=money(state.hourly);
   document.getElementById("planGross").textContent=`세전 ${money(plan.gross)}`;
   document.getElementById("actualGross").textContent=`세전 ${money(actual.gross)}`;
 
@@ -1033,6 +1107,123 @@ function updatePreview(){
   document.getElementById("extraPreview").textContent=formatMinutes(c.extra);
   document.getElementById("workPreview").textContent=formatMinutes(c.work);
 }
+
+
+function setCloudStatus(message,kind=""){
+  const el=document.getElementById("cloudStatus");
+  if(!el) return;
+  el.textContent=message;
+  el.className="small"+(kind==="ok"?" sync-ok":kind==="bad"?" sync-bad":"");
+}
+
+function updateCloudUi(){
+  const out=document.getElementById("cloudLoggedOut");
+  const inn=document.getElementById("cloudLoggedIn");
+  if(!out || !inn) return;
+  if(cloudUser){
+    out.style.display="none";
+    inn.style.display="flex";
+    document.getElementById("cloudUser").textContent=cloudUser.email||"로그인됨";
+  }else{
+    out.style.display="flex";
+    inn.style.display="none";
+  }
+}
+
+async function loadCloudStateAfterLogin(){
+  if(!cloudUser) return;
+  setCloudStatus("클라우드 데이터 확인 중…");
+  try{
+    const {data,error}=await supabaseClient
+      .from("work_planner_state")
+      .select("data,updated_at")
+      .eq("user_id",cloudUser.id)
+      .maybeSingle();
+
+    if(error) throw error;
+
+    if(data?.data && typeof data.data==="object"){
+      // 클라우드가 이미 있으면 클라우드를 기준으로 사용.
+      state=normalizeState(data.data);
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+      render();
+      setCloudStatus("클라우드 데이터 불러옴 · 기기간 동기화 중","ok");
+    }else{
+      // 첫 로그인: 현재 브라우저 데이터를 클라우드에 업로드.
+      await saveStateToCloud(false);
+      setCloudStatus("현재 기기 데이터를 클라우드에 처음 저장했습니다.","ok");
+    }
+  }catch(err){
+    console.error(err);
+    setCloudStatus("클라우드 불러오기 실패 · 로컬 데이터로 계속 사용","bad");
+  }
+}
+
+async function initCloud(){
+  try{
+    const {data:{session}}=await supabaseClient.auth.getSession();
+    cloudUser=session?.user||null;
+    updateCloudUi();
+    if(cloudUser) await loadCloudStateAfterLogin();
+
+    supabaseClient.auth.onAuthStateChange(async (event,session)=>{
+      const previousId=cloudUser?.id||null;
+      cloudUser=session?.user||null;
+      updateCloudUi();
+      if(cloudUser && cloudUser.id!==previousId){
+        await loadCloudStateAfterLogin();
+      }else if(!cloudUser){
+        setCloudStatus("로그인하면 휴대폰·태블릿·노트북에서 같은 데이터를 사용합니다.");
+      }
+    });
+  }catch(err){
+    console.error(err);
+    setCloudStatus("Supabase 연결 초기화 실패","bad");
+  }
+}
+
+document.getElementById("cloudSignIn").addEventListener("click",async ()=>{
+  const email=document.getElementById("cloudEmail").value.trim();
+  const password=document.getElementById("cloudPassword").value;
+  if(!email || !password){
+    setCloudStatus("이메일과 비밀번호를 입력해주세요.","bad");
+    return;
+  }
+  setCloudStatus("로그인 중…");
+  const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error) setCloudStatus("로그인 실패: "+error.message,"bad");
+});
+
+document.getElementById("cloudSignUp").addEventListener("click",async ()=>{
+  const email=document.getElementById("cloudEmail").value.trim();
+  const password=document.getElementById("cloudPassword").value;
+  if(!email || password.length<8){
+    setCloudStatus("이메일과 8자 이상 비밀번호를 입력해주세요.","bad");
+    return;
+  }
+  setCloudStatus("계정 생성 중…");
+  const {data,error}=await supabaseClient.auth.signUp({email,password});
+  if(error){
+    setCloudStatus("가입 실패: "+error.message,"bad");
+  }else if(data.session){
+    setCloudStatus("가입 및 로그인 완료","ok");
+  }else{
+    setCloudStatus("가입 완료 · 이메일 확인 메일을 확인해주세요.","ok");
+  }
+});
+
+document.getElementById("cloudSignOut").addEventListener("click",async ()=>{
+  if(cloudDirty) await saveStateToCloud(false);
+  await supabaseClient.auth.signOut();
+  cloudUser=null;
+  updateCloudUi();
+});
+
+document.getElementById("cloudSyncNow").addEventListener("click",async ()=>{
+  if(!cloudUser) return;
+  await saveStateToCloud(true);
+});
+
 
 document.getElementById("prev").addEventListener("click",()=>{
   currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()-1,1); render();
@@ -1268,7 +1459,7 @@ migrateSingleLegalBreak();
 migrateNonWorkActivities();
 saveState();
 render();
+initCloud();
 </script>
-<div id="webBuildVersion" style="text-align:center;color:#98a2b3;font-size:11px;padding:10px 0 18px">Web V5.1</div>
 </body>
 </html>
