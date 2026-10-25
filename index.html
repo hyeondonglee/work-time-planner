@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>근무 전략 플래너 Sync V5.3</title>
+<title>근무 전략 플래너 Sync V5.4</title>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
@@ -155,13 +155,19 @@ button.danger:hover{background:#ffe4e6}
 #cloudPanel .sync-ok{color:var(--good)}
 #cloudPanel .sync-bad{color:var(--bad)}
 
+
+#cloudSyncNow:disabled{
+  opacity:.65;
+  cursor:wait;
+}
+
 </style>
 </head>
 <body>
 <div class="app">
 <header>
   <div>
-    <h1>근무 전략 플래너 Sync V5.3</h1>
+    <h1>근무 전략 플래너 Sync V5.4</h1>
     <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
   </div>
   <div class="nav">
@@ -1130,23 +1136,32 @@ function updateCloudUi(){
   }
 }
 
+
+async function fetchLatestCloudState(){
+  if(!cloudUser) return false;
+  const {data,error}=await supabaseClient
+    .from("work_planner_state")
+    .select("data,updated_at")
+    .eq("user_id",cloudUser.id)
+    .maybeSingle();
+
+  if(error) throw error;
+  if(data?.data && typeof data.data==="object"){
+    state=normalizeState(data.data);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+    render();
+    return true;
+  }
+  return false;
+}
+
 async function loadCloudStateAfterLogin(){
   if(!cloudUser) return;
   setCloudStatus("클라우드 데이터 확인 중…");
   try{
-    const {data,error}=await supabaseClient
-      .from("work_planner_state")
-      .select("data,updated_at")
-      .eq("user_id",cloudUser.id)
-      .maybeSingle();
+    const loaded=await fetchLatestCloudState();
 
-    if(error) throw error;
-
-    if(data?.data && typeof data.data==="object"){
-      // 클라우드가 이미 있으면 클라우드를 기준으로 사용.
-      state=normalizeState(data.data);
-      localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
-      render();
+    if(loaded){
       setCloudStatus("클라우드 데이터 불러옴 · 기기간 동기화 중","ok");
     }else{
       // 첫 로그인: 현재 브라우저 데이터를 클라우드에 업로드.
@@ -1221,7 +1236,37 @@ document.getElementById("cloudSignOut").addEventListener("click",async ()=>{
 
 document.getElementById("cloudSyncNow").addEventListener("click",async ()=>{
   if(!cloudUser) return;
-  await saveStateToCloud(true);
+
+  const btn=document.getElementById("cloudSyncNow");
+  const original=btn.textContent;
+  btn.disabled=true;
+  btn.textContent="동기화 중…";
+  setCloudStatus("클라우드와 동기화 중…");
+
+  try{
+    // 1) 현재 기기 상태를 클라우드에 저장
+    await saveStateToCloud(false);
+
+    // 2) 저장 직후 클라우드 최신 상태를 다시 불러와 화면 반영
+    await fetchLatestCloudState();
+
+    btn.textContent="동기화 완료 ✓";
+    setCloudStatus("동기화 완료 · 최신 클라우드 데이터 반영","ok");
+
+    setTimeout(()=>{
+      btn.textContent=original;
+      btn.disabled=false;
+    },1200);
+  }catch(err){
+    console.error(err);
+    btn.textContent="동기화 실패";
+    setCloudStatus("동기화 실패 · 로컬 데이터는 유지됩니다.","bad");
+
+    setTimeout(()=>{
+      btn.textContent=original;
+      btn.disabled=false;
+    },1500);
+  }
 });
 
 
