@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>근무 전략 플래너 Sync V5.16</title>
+<title>근무 전략 플래너 Sync V5.17</title>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
@@ -376,7 +376,7 @@ button.danger:hover{background:#ffe4e6}
 <div class="app">
 <header>
   <div>
-    <h1>근무 전략 플래너 Sync V5.16</h1>
+    <h1>근무 전략 플래너 Sync V5.17</h1>
     <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
   </div>
   <div class="nav">
@@ -1174,8 +1174,8 @@ function renderMonthlyReport(){
     `${currentMonth.getFullYear()}년 ${currentMonth.getMonth()+1}월 리포트`;
 
   if(a.startsCount){
-    document.getElementById("reportAvgWork").textContent=
-      `${minutesToClock(a.avgStart)} → ${minutesToClock(a.avgEnd)}`;
+    document.getElementById("reportAvgWork").innerHTML=
+      `평균 출근 ${minutesToClock(a.avgStart)}<br><span style="font-size:15px">평균 퇴근 ${minutesToClock(a.avgEnd)}</span>`;
   }else{
     document.getElementById("reportAvgWork").textContent="-";
   }
