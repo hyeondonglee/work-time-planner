@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>근무 전략 플래너 Sync V5.4</title>
+<title>근무 전략 플래너 Sync V5.5</title>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
@@ -161,13 +161,26 @@ button.danger:hover{background:#ffe4e6}
   cursor:wait;
 }
 
+
+.activity .act-reason-wrap{
+  display:none;
+  min-width:160px;
+  flex:1;
+}
+.activity.other-selected .act-reason-wrap{
+  display:block;
+}
+.activity .act-reason{
+  width:100%;
+}
+
 </style>
 </head>
 <body>
 <div class="app">
 <header>
   <div>
-    <h1>근무 전략 플래너 Sync V5.4</h1>
+    <h1>근무 전략 플래너 Sync V5.5</h1>
     <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
   </div>
   <div class="nav">
@@ -680,7 +693,7 @@ function legalBreak(stayMinutes){
 }
 
 function defaultActivities(){
-  return [{name:"중식",minutes:30,useLegal:true}];
+  return [{name:"중식",minutes:30,useLegal:true,reason:""}];
 }
 
 function usesDefaultLunch(type){
@@ -751,6 +764,7 @@ function normalizeSingleLegalBreak(activities){
   let used=false;
   return (activities||[]).map(a=>{
     const copy={...a};
+    copy.reason = copy.name==="기타" ? String(copy.reason||"") : "";
     if(copy.useLegal){
       if(used) copy.useLegal=false;
       else used=true;
@@ -1069,8 +1083,23 @@ function renderActivities(list){
           <option value="1" ${a.useLegal?"selected":""}>예</option>
         </select>
       </div>
+      <div class="field act-reason-wrap">
+        <label>기타 사유</label>
+        <input class="act-reason" type="text" maxlength="40" placeholder="간단한 사유" value="${String(a.reason||"").replace(/"/g,"&quot;")}" />
+      </div>
       <button class="delete-act">삭제</button>
     `;
+    const nameSelect=row.querySelector(".act-name");
+    const syncReasonVisibility=()=>{
+      row.classList.toggle("other-selected", nameSelect.value==="기타");
+      if(nameSelect.value!=="기타") row.querySelector(".act-reason").value="";
+    };
+    syncReasonVisibility();
+    nameSelect.addEventListener("change",()=>{
+      syncReasonVisibility();
+      updatePreview();
+    });
+
     row.querySelector(".delete-act").addEventListener("click",()=>{
       row.remove(); updatePreview();
     });
@@ -1082,7 +1111,7 @@ function renderActivities(list){
       }
       updatePreview();
     });
-    row.querySelectorAll("input,.act-name").forEach(el=>el.addEventListener("input",updatePreview));
+    row.querySelectorAll("input").forEach(el=>el.addEventListener("input",updatePreview));
     box.appendChild(row);
   });
 }
@@ -1091,7 +1120,10 @@ function collectActivities(){
   const activities=[...document.querySelectorAll("#activities .activity")].map(row=>({
     name:row.querySelector(".act-name").value,
     minutes:Number(row.querySelector(".act-min").value||0),
-    useLegal:row.querySelector(".act-legal").value==="1"
+    useLegal:row.querySelector(".act-legal").value==="1",
+    reason:row.querySelector(".act-name").value==="기타"
+      ? row.querySelector(".act-reason").value.trim()
+      : ""
   }));
   return normalizeSingleLegalBreak(activities);
 }
@@ -1374,7 +1406,7 @@ document.getElementById("endTime").addEventListener("input",updatePreview);
 
 document.getElementById("addActivity").addEventListener("click",()=>{
   const arr=collectActivities();
-  arr.push({name:"기타",minutes:0,useLegal:false});
+  arr.push({name:"기타",minutes:0,useLegal:false,reason:""});
   renderActivities(arr);
   updatePreview();
 });
