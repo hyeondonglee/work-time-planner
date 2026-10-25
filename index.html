@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>근무 전략 플래너 Sync V5.8</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>근무 전략 플래너 Sync V5.9</title>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
@@ -65,14 +68,12 @@ input,select{border:1px solid var(--line);border-radius:10px;padding:9px 10px;ba
 .modal{width:min(720px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:18px;box-shadow:0 25px 70px rgba(0,0,0,.18)}
 .form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .field{display:flex;flex-direction:column;gap:5px}
-.activity{display:grid;grid-template-columns:1.2fr .6fr .8fr auto;gap:7px;align-items:end;margin-bottom:7px}
 .hint{background:#f8fafc;border:1px dashed var(--line);border-radius:11px;padding:10px;font-size:12px;color:var(--muted);line-height:1.45}
 .preview{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:11px;margin-top:12px}
 .footer{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 @media(max-width:900px){.kpi{grid-column:span 6}.wide,.side{grid-column:1/-1}}
 @media(max-width:620px){
-  .app{padding:10px}.kpi{grid-column:1/-1}.form{grid-template-columns:1fr}
-  .activity{grid-template-columns:1fr 1fr}.calendar{gap:4px}.day{min-height:86px;padding:6px}
+  .app{padding:10px}.kpi{grid-column:1/-1}.form{grid-template-columns:1fr}.calendar{gap:4px}.day{min-height:86px;padding:6px}
 }
 
 /* V3.0 goal bars: same red color and same thickness */
@@ -163,57 +164,7 @@ button.danger:hover{background:#ffe4e6}
 
 
 
-.activity .field:nth-child(1){grid-column:1/2}
-  .activity .field:nth-child(2){grid-column:2/3}
-  .activity .field:nth-child(3){grid-column:1/3}
-  .activity .act-reason-wrap{grid-column:1/3}
-  .activity .delete-act{
-    grid-column:1/3;
-    width:100%;
-  }
-}
-
-
-/* V5.8 A-style activity editor */
-.activity{
-  display:grid;
-  grid-template-columns:minmax(180px,1.3fr) minmax(120px,.7fr) minmax(180px,1fr) auto;
-  gap:10px;
-  align-items:end;
-  padding:10px 0;
-  border-bottom:1px solid var(--line);
-}
-.activity:last-child{border-bottom:none}
-.activity .field{min-width:0}
-.activity .field input,
-.activity .field select{
-  width:100%;
-  min-width:0;
-}
-.activity .delete-act{
-  align-self:end;
-  white-space:nowrap;
-  height:42px;
-}
-.activity .act-reason-wrap{
-  display:none;
-  grid-column:1 / -1;
-}
-.activity.other-selected .act-reason-wrap{
-  display:block;
-}
-.activity .act-reason{
-  width:100%;
-}
-
-@media(max-width:760px){
-  .activity{
-    grid-template-columns:minmax(0,1.35fr) minmax(76px,.65fr) minmax(0,1fr) auto;
-    gap:6px;
-    align-items:end;
-    padding:9px 0;
-  }
-  .activity .field label{
+.activity .field label{
     font-size:11px;
   }
   .activity .field input,
@@ -232,13 +183,91 @@ button.danger:hover{background:#ffe4e6}
   }
 }
 
+
+/* V5.9 clean A-style activity editor */
+#activities{
+  width:100%;
+}
+.activity{
+  display:grid !important;
+  grid-template-columns:minmax(0,2fr) minmax(72px,.8fr) minmax(0,1.35fr) 52px !important;
+  grid-template-areas:
+    "name minutes legal delete"
+    "reason reason reason reason";
+  column-gap:8px;
+  row-gap:7px;
+  align-items:end;
+  padding:9px 0 10px;
+  border-bottom:1px solid var(--line);
+}
+.activity:last-child{border-bottom:none}
+
+.activity > .field:nth-child(1){grid-area:name}
+.activity > .field:nth-child(2){grid-area:minutes}
+.activity > .field:nth-child(3){grid-area:legal}
+.activity > .act-reason-wrap{grid-area:reason}
+.activity > .delete-act{grid-area:delete}
+
+.activity .field{
+  min-width:0 !important;
+  width:auto !important;
+}
+.activity .field label{
+  display:block;
+  white-space:nowrap;
+  margin-bottom:5px;
+}
+.activity .field input,
+.activity .field select{
+  width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box;
+}
+.activity .delete-act{
+  width:52px !important;
+  min-width:52px !important;
+  padding:9px 6px !important;
+  white-space:nowrap;
+  align-self:end;
+}
+.activity .act-reason-wrap{
+  display:none;
+}
+.activity.other-selected .act-reason-wrap{
+  display:block;
+}
+.activity .act-reason{
+  width:100% !important;
+}
+
+@media(max-width:620px){
+  .activity{
+    grid-template-columns:minmax(0,1.7fr) 72px minmax(0,1fr) 46px !important;
+    column-gap:6px;
+  }
+  .activity .field label{
+    font-size:10px;
+  }
+  .activity .field input,
+  .activity .field select{
+    padding:8px 6px;
+    font-size:13px;
+  }
+  .activity .delete-act{
+    width:46px !important;
+    min-width:46px !important;
+    padding:8px 4px !important;
+    font-size:12px;
+  }
+}
+
 </style>
 </head>
 <body>
 <div class="app">
 <header>
   <div>
-    <h1>근무 전략 플래너 Sync V5.8</h1>
+    <h1>근무 전략 플래너 Sync V5.9</h1>
     <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
   </div>
   <div class="nav">
@@ -1134,7 +1163,7 @@ function renderActivities(list){
         <input class="act-min" type="number" min="0" value="${Number(a.minutes||0)}" />
       </div>
       <div class="field">
-        <label>법정휴게 사용</label>
+        <label>법정휴게</label>
         <select class="act-legal">
           <option value="0">아니오</option>
           <option value="1" ${a.useLegal?"selected":""}>예</option>
