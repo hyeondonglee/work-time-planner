@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>근무 전략 플래너 Sync V5.10</title>
+<title>근무 전략 플래너 Sync V5.11</title>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
@@ -261,13 +261,42 @@ button.danger:hover{background:#ffe4e6}
   }
 }
 
+
+/* V5.11 calendar exclusion tags */
+.day-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:3px;
+  margin-top:4px;
+}
+.day-tag{
+  display:inline-flex;
+  align-items:center;
+  max-width:100%;
+  padding:2px 5px;
+  border-radius:999px;
+  font-size:9px;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  color:#475467;
+  background:#f2f4f7;
+  border:1px solid #eaecf0;
+}
+.day-tag.tag-lunch{background:#f7f3ea;border-color:#eee4cf;color:#6b5a36}
+.day-tag.tag-yoga{background:#f3efff;border-color:#e4dcff;color:#6652a3}
+.day-tag.tag-gym{background:#edf7ef;border-color:#d7ebdb;color:#417a4d}
+.day-tag.tag-other{background:#fff4e8;border-color:#f6dfc3;color:#9a6327}
+.day-tag.tag-more{background:#f8fafc;border-color:#e4e7ec;color:#667085}
+
 </style>
 </head>
 <body>
 <div class="app">
 <header>
   <div>
-    <h1>근무 전략 플래너 Sync V5.10</h1>
+    <h1>근무 전략 플래너 Sync V5.11</h1>
     <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
   </div>
   <div class="nav">
@@ -978,7 +1007,7 @@ function render(){
   if(plan.total>maxAllowed){
     const over=plan.total-maxAllowed;
     limitWarning.style.display="block";
-    limitWarning.innerHTML=`⚠️ <strong>계획 근무시간이 최대근무시간을 ${formatMinutes(over)} 초과했습니다.</strong><br>현재 계획 ${hm(plan.total)} / 최대 ${hm(maxAllowed)} · 퇴근시간을 줄여 한도 이내로 조정하세요.`;
+    limitWarning.innerHTML=`⚠️ <strong>계획 근무시간이 최대근무시간을 ${formatMinutes(over)} 초과했습니다.</strong><br>현재 계획 ${hm(plan.total)} / 최대 ${hm(maxAllowed)} · 퇴근시간을 줄여 한도 이내로 조정하세요.${calendarActivityTags(rec)}`;
     maximumEl.classList.remove("max-safe");
     maximumEl.classList.add("max-danger");
   }else{
@@ -1069,6 +1098,34 @@ function renderToday(){
   }else{
     detail.textContent="기본 출근시간과 같음";
   }
+}
+
+
+function activityTagClass(name){
+  if(name==="중식") return "tag-lunch";
+  if(name==="요가") return "tag-yoga";
+  if(name==="헬스") return "tag-gym";
+  if(name==="기타") return "tag-other";
+  return "";
+}
+
+function calendarActivityTags(rec){
+  const acts=(rec?.activities||[])
+    .filter(a=>Number(a.minutes||0)>0)
+    .map(a=>({name:a.name||"기타",minutes:Number(a.minutes||0)}));
+
+  if(!acts.length) return "";
+
+  const visible=acts.slice(0,3);
+  let html='<div class="day-tags">';
+  visible.forEach(a=>{
+    html+=`<span class="day-tag ${activityTagClass(a.name)}" title="${a.name} ${a.minutes}분">${a.name}</span>`;
+  });
+  if(acts.length>3){
+    html+=`<span class="day-tag tag-more">+${acts.length-3}</span>`;
+  }
+  html+='</div>';
+  return html;
 }
 
 function renderCalendar(){
