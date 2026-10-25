@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>근무 전략 플래너 Sync V5.17</title>
+<title>근무 전략 플래너 Sync V5.18</title>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
@@ -376,7 +376,7 @@ button.danger:hover{background:#ffe4e6}
 <div class="app">
 <header>
   <div>
-    <h1>근무 전략 플래너 Sync V5.17</h1>
+    <h1>근무 전략 플래너 Sync V5.18</h1>
     <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
   </div>
   <div class="nav">
@@ -557,7 +557,7 @@ button.danger:hover{background:#ffe4e6}
       <div class="report-box">
         <div class="report-title">시간 → 돈</div>
         <div class="report-main" id="reportEarnedTime">-</div>
-        <div class="report-sub" id="reportEarnedMoney">08:30보다 일찍 출근한 시간만 합산해 세후 OT 가치로 환산합니다.</div>
+        <div class="report-sub" id="reportEarnedMoney">08:30보다 일찍 출근한 시간을 합산하고, 이를 세후 OT 가치로 환산합니다.</div>
       </div>
 
       <div class="report-box">
@@ -1175,7 +1175,7 @@ function renderMonthlyReport(){
 
   if(a.startsCount){
     document.getElementById("reportAvgWork").innerHTML=
-      `평균 출근 ${minutesToClock(a.avgStart)}<br><span style="font-size:15px">평균 퇴근 ${minutesToClock(a.avgEnd)}</span>`;
+      `평균 출근 ${minutesToClock(a.avgStart)}<br>평균 퇴근 ${minutesToClock(a.avgEnd)}`;
   }else{
     document.getElementById("reportAvgWork").textContent="-";
   }
@@ -1221,7 +1221,7 @@ function renderMonthlyReport(){
   document.getElementById("reportEarnedTime").textContent=
     a.earnedMinutes>0 ? `+${formatMinutes(a.earnedMinutes)}` : "0분";
   document.getElementById("reportEarnedMoney").textContent=
-    `세후 약 ${money(a.earnedMinutes*(29738/60))} 가치 · 08:30 기준 · 시간당 약 ₩29,738`;
+    `08:30 기준 · 세후 약 ${money(a.earnedMinutes*(29738/60))} 가치 · 시간당 약 ₩29,738로 환산`;
 
   const earlyDone=a.earlyBefore8>=3;
   const earlyQuest=document.getElementById("questEarly");
