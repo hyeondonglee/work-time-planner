@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>근무 전략 플래너 Sync V5.14</title>
+<title>근무 전략 플래너 Sync V5.16</title>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
@@ -376,7 +376,7 @@ button.danger:hover{background:#ffe4e6}
 <div class="app">
 <header>
   <div>
-    <h1>근무 전략 플래너 Sync V5.14</h1>
+    <h1>근무 전략 플래너 Sync V5.16</h1>
     <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
   </div>
   <div class="nav">
@@ -568,12 +568,8 @@ button.danger:hover{background:#ffe4e6}
             <div class="quest-status" id="questEarlyStatus">0 / 3</div>
           </div>
           <div class="quest" id="questVeryEarly">
-            <div class="quest-name">07:00 이전 출근 1회</div>
-            <div class="quest-status" id="questVeryEarlyStatus">0 / 1</div>
-          </div>
-          <div class="quest" id="questStreak">
-            <div class="quest-name">실제값 5일 연속 기록</div>
-            <div class="quest-status" id="questStreakStatus">0 / 5</div>
+            <div class="quest-name">07:00 이전 출근 3회</div>
+            <div class="quest-status" id="questVeryEarlyStatus">0 / 3</div>
           </div>
         </div>
       </div>
@@ -1160,19 +1156,10 @@ function actualMonthAnalytics(d){
     .sort((a,b)=>b[1]-a[1])
     .slice(0,3);
 
-  // 실제 기록 5일 연속: 날짜가 연속된 actual 기록의 최대 streak.
-  let maxStreak=0, streak=0, prev=null;
-  enteredDates.sort((a,b)=>a-b).forEach(dayNum=>{
-    if(prev!==null && dayNum===prev+1) streak++;
-    else streak=1;
-    maxStreak=Math.max(maxStreak,streak);
-    prev=dayNum;
-  });
-
   return {
     startsCount:starts.length,
     avgStart,avgEnd,totalWork,enteredDays,earlyBefore8,earlyBefore7,
-    earnedMinutes,topActivities,maxStreak
+    earnedMinutes,topActivities
   };
 }
 
@@ -1217,8 +1204,8 @@ function renderMonthlyReport(){
     topBox.appendChild(chip);
   }
 
-  document.getElementById("reportEarlyCount").textContent=
-    `08:00 이전 ${a.earlyBefore8}회 · 07:00 이전 ${a.earlyBefore7}회`;
+  document.getElementById("reportEarlyCount").innerHTML=
+    `08:00 이전 ${a.earlyBefore8}회<br>07:00 이전 ${a.earlyBefore7}회`;
 
   let habitText = a.avgStart!==null ? `평균 출근 ${minutesToClock(a.avgStart)}` : "평균 출근 데이터 없음";
   if(a.avgStart!==null && p.avgStart!==null){
@@ -1242,17 +1229,11 @@ function renderMonthlyReport(){
   document.getElementById("questEarlyStatus").textContent=
     earlyDone ? "완료 ✓" : `${a.earlyBefore8} / 3`;
 
-  const veryEarlyDone=a.earlyBefore7>=1;
+  const veryEarlyDone=a.earlyBefore7>=3;
   const veryEarlyQuest=document.getElementById("questVeryEarly");
   veryEarlyQuest.classList.toggle("done",veryEarlyDone);
   document.getElementById("questVeryEarlyStatus").textContent=
-    veryEarlyDone ? "완료 ✓" : `${a.earlyBefore7} / 1`;
-
-  const streakDone=a.maxStreak>=5;
-  const streakQuest=document.getElementById("questStreak");
-  streakQuest.classList.toggle("done",streakDone);
-  document.getElementById("questStreakStatus").textContent=
-    streakDone ? "완료 ✓" : `${a.maxStreak} / 5`;
+    veryEarlyDone ? "완료 ✓" : `${a.earlyBefore7} / 3`;
 }
 
 function render(){
