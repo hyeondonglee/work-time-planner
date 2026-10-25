@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>근무 전략 플래너 Sync V5.11</title>
+<title>근무 전략 플래너 Sync V5.12</title>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
@@ -266,14 +266,14 @@ button.danger:hover{background:#ffe4e6}
 .day-tags{
   display:flex;
   flex-wrap:wrap;
-  gap:3px;
+  gap:2px;
   margin-top:4px;
 }
 .day-tag{
   display:inline-flex;
   align-items:center;
   max-width:100%;
-  padding:2px 5px;
+  padding:1px 4px;
   border-radius:999px;
   font-size:9px;
   line-height:1.2;
@@ -296,7 +296,7 @@ button.danger:hover{background:#ffe4e6}
 <div class="app">
 <header>
   <div>
-    <h1>근무 전략 플래너 Sync V5.11</h1>
+    <h1>근무 전략 플래너 Sync V5.12</h1>
     <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
   </div>
   <div class="nav">
@@ -1007,7 +1007,7 @@ function render(){
   if(plan.total>maxAllowed){
     const over=plan.total-maxAllowed;
     limitWarning.style.display="block";
-    limitWarning.innerHTML=`⚠️ <strong>계획 근무시간이 최대근무시간을 ${formatMinutes(over)} 초과했습니다.</strong><br>현재 계획 ${hm(plan.total)} / 최대 ${hm(maxAllowed)} · 퇴근시간을 줄여 한도 이내로 조정하세요.${calendarActivityTags(rec)}`;
+    limitWarning.innerHTML=`⚠️ <strong>계획 근무시간이 최대근무시간을 ${formatMinutes(over)} 초과했습니다.</strong><br>현재 계획 ${hm(plan.total)} / 최대 ${hm(maxAllowed)} · 퇴근시간을 줄여 한도 이내로 조정하세요.`;
     maximumEl.classList.remove("max-safe");
     maximumEl.classList.add("max-danger");
   }else{
@@ -1104,7 +1104,7 @@ function renderToday(){
 function activityTagClass(name){
   if(name==="중식") return "tag-lunch";
   if(name==="요가") return "tag-yoga";
-  if(name==="헬스") return "tag-gym";
+  if(name==="헬스" || name==="헬스장") return "tag-gym";
   if(name==="기타") return "tag-other";
   return "";
 }
@@ -1167,6 +1167,7 @@ function renderCalendar(){
         <span class="small">실근무 ${hm(c.work)}</span>
       </div>` : ""}
       ${label?`<span class="badge">${label}</span>`:""}
+      ${calendarActivityTags(rec)}
     `;
     e.addEventListener("click",()=>openDay(d));
     cal.appendChild(e);
