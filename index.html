@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>근무 전략 플래너 Web V5.1</title>
+<style>
+:root{
+  --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
+  --accent:#2f6fed; --accent2:#7ea4f8; --line:#e6ebf1;
+  --good:#15804a; --warn:#b97000; --bad:#c0392b;
+  --shadow:0 8px 24px rgba(16,24,40,.05);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans KR",sans-serif;color:var(--text)}
+.app{max-width:1180px;margin:0 auto;padding:20px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+h1{margin:0;font-size:24px}.sub{color:var(--muted);font-size:13px;margin-top:3px}
+.nav{display:flex;align-items:center;gap:8px}
+button{border:1px solid var(--line);background:#fff;border-radius:11px;padding:9px 12px;font-weight:700;cursor:pointer}
+button:hover{border-color:#cdd8e8}
+.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+.kpi{grid-column:span 3}.wide{grid-column:span 8}.side{grid-column:span 4}.full{grid-column:1/-1}
+.label{font-size:12px;color:var(--muted)}
+.value{font-size:26px;font-weight:850;margin-top:5px}
+.small{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+.section{font-size:17px;font-weight:800;margin:0 0 12px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+input,select{border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:#fff;font:inherit}
+.progress{height:11px;background:#edf1f6;border-radius:999px;overflow:hidden;margin-top:7px}
+.progress>div{height:100%;width:0;background:var(--accent);transition:width .2s}
+.progress.thin{height:6px}.progress.thin>div{background:var(--accent2)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:7px}
+.splitbox{background:#f8fafc;border:1px solid #edf1f6;border-radius:13px;padding:11px}
+.splitbox .name{font-size:11px;color:var(--muted)}
+.splitbox .num{font-size:18px;font-weight:850;margin-top:3px}
+.goal-row{display:flex;justify-content:space-between;gap:14px;align-items:flex-end;flex-wrap:wrap}
+.goal-block{margin-top:12px}
+.goal-head{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted)}
+.goal-hint{font-size:12px;color:var(--muted);margin-top:5px}
+.exclude-line{display:flex;align-items:center;gap:9px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.exclude-line strong{color:var(--text)}
+.exclude-mini{width:100px;height:5px;background:#edf1f6;border-radius:999px;overflow:hidden}
+.exclude-mini>div{height:100%;background:var(--accent);width:0}
+.today{background:linear-gradient(135deg,#eef4ff,#fff);border:1px solid #d9e5ff;border-radius:14px;padding:14px}
+.today .big{font-size:22px;font-weight:900;margin:5px 0}
+.positive{color:var(--good)}.negative{color:var(--bad)}
+.tabs-wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.tabs{display:flex;background:#f1f4f8;border-radius:12px;padding:4px;gap:4px}
+.tabs button{border:0;box-shadow:none;background:transparent;color:var(--muted);padding:8px 18px}
+.tabs button.active{background:#fff;color:var(--accent);box-shadow:0 2px 8px rgba(16,24,40,.08)}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dow{text-align:center;font-size:12px;color:var(--muted);padding:5px}
+.day{min-height:101px;border:1px solid var(--line);border-radius:13px;padding:8px;background:#fff;cursor:pointer}
+.day:hover{border-color:#b9caf0}
+.day.empty{background:transparent;border-style:dashed;cursor:default}
+.date{font-weight:800;font-size:13px}
+.times{font-size:12px;line-height:1.45;margin-top:7px}
+.badge{display:inline-block;margin-top:6px;padding:3px 6px;border-radius:999px;background:#edf3ff;color:var(--accent);font-size:10px;font-weight:800}
+.holiday{background:#fff8f8;border-color:#ffdede}.holiday .date,.holiday-name{color:#c9332d}
+.holiday-name{font-size:10px;font-weight:800;margin-top:3px}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.40);display:none;align-items:center;justify-content:center;padding:14px;z-index:100}
+.modal{width:min(720px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:18px;box-shadow:0 25px 70px rgba(0,0,0,.18)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:5px}
+.activity{display:grid;grid-template-columns:1.2fr .6fr .8fr auto;gap:7px;align-items:end;margin-bottom:7px}
+.hint{background:#f8fafc;border:1px dashed var(--line);border-radius:11px;padding:10px;font-size:12px;color:var(--muted);line-height:1.45}
+.preview{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:11px;margin-top:12px}
+.footer{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+@media(max-width:900px){.kpi{grid-column:span 6}.wide,.side{grid-column:1/-1}}
+@media(max-width:620px){
+  .app{padding:10px}.kpi{grid-column:1/-1}.form{grid-template-columns:1fr}
+  .activity{grid-template-columns:1fr 1fr}.calendar{gap:4px}.day{min-height:86px;padding:6px}
+}
+
+/* V3.0 goal bars: same red color and same thickness */
+#planGoalBar, #actualGoalBar { background:#dc2626 !important; }
+.progress, .progress.thin { height:11px !important; }
+.progress.thin>div { background:#dc2626 !important; }
+
+
+/* V3.2 goal bars */
+#planGoalBar { background:#2f6fed !important; }
+#actualGoalBar { background:#22a06b !important; }
+.progress { height:11px !important; }
+.progress.thin { height:6px !important; }
+.progress.thin>div { background:#22a06b !important; }
+
+
+/* V3.5 maximum-hours safety */
+.limit-warning{
+  display:none;
+  grid-column:1/-1;
+  background:#fff1f2;
+  border:1px solid #fecdd3;
+  color:#9f1239;
+  border-radius:14px;
+  padding:12px 14px;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.45;
+}
+.limit-warning strong{font-size:15px}
+.max-safe{color:var(--good)}
+.max-danger{color:var(--bad)}
+
+
+/* V3.8 actual-data deletion */
+button.danger{
+  background:#fff1f2;
+  color:#b42318;
+  border:1px solid #fecdca;
+}
+button.danger:hover{background:#ffe4e6}
+
+
+
+
+}
+
+
+/* V5.0 top KPI layout */
+.card.kpi.limit-card{grid-column:span 3}
+.card.kpi.work-card{grid-column:span 4}
+.card.kpi.ot-card{grid-column:span 5}
+
+/* prevent awkward word-by-word wrapping in KPI boxes */
+.card.kpi .splitbox .name,
+.card.kpi .splitbox .num,
+.card.kpi .splitbox .small{
+  word-break:keep-all;
+  overflow-wrap:normal;
+}
+
+@media(max-width:900px){
+  .card.kpi.limit-card,
+  .card.kpi.work-card,
+  .card.kpi.ot-card{grid-column:span 6}
+}
+@media(max-width:620px){
+  .card.kpi.limit-card,
+  .card.kpi.work-card,
+  .card.kpi.ot-card{grid-column:1/-1}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div>
+    <h1>근무 전략 플래너 Web V5.1</h1>
+    <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
+  </div>
+  <div class="nav">
+    <button id="prev">←</button>
+    <strong id="monthLabel"></strong>
+    <button id="next">→</button>
+    <button id="exportData">백업 내보내기</button>
+    <button id="importData">백업 가져오기</button>
+    <input id="importFile" type="file" accept="application/json,.json" style="display:none" />
+    <button id="reset">초기화</button>
+  </div>
+</header>
+<div id="saveToast" style="display:none;margin:-6px 0 12px;padding:9px 11px;background:#eef8f1;border:1px solid #d6ecdc;border-radius:10px;color:#35734a"></div>
+
+<div id="migrationNotice" class="small" style="display:none;margin:-6px 0 12px;padding:9px 11px;background:#eef8f1;border:1px solid #d6ecdc;border-radius:10px;color:#35734a"></div>
+
+<div class="grid">
+  <div class="limit-warning" id="limitWarning"></div>
+  <div class="card kpi limit-card">
+    <div class="label">근무 한도</div>
+    <div class="split">
+      <div class="splitbox">
+        <div class="name">필수근무</div>
+        <div class="num" id="required">0h 00m</div>
+        <div class="small">공휴일/연차 반영</div>
+      </div>
+      <div class="splitbox">
+        <div class="name">최대근무</div>
+        <div class="num" id="maximum">0h 00m</div>
+        <div class="small">월 52h 평균 한도</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card kpi work-card">
+    <div class="label">실근무</div>
+    <div class="split">
+      <div class="splitbox">
+        <div class="name">계획</div>
+        <div class="num" id="planWorked">0h 00m</div>
+        <div class="small" id="planWorkedSub">월간 계획 실근무</div>
+      </div>
+      <div class="splitbox">
+        <div class="name">실제</div>
+        <div class="num" id="actualWorked">0h 00m</div>
+        <div class="small" id="actualWorkedSub">월간 실제 실근무</div>
+        <div class="small" id="actualThresholdInline" style="margin-top:4px"></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="card kpi ot-card">
+    <div class="label">예상 세후 OT</div>
+    <div class="split">
+      <div class="splitbox">
+        <div class="name">계획</div>
+        <div class="num" id="planNet">₩0</div>
+        <div class="small" id="planGross">세전 ₩0</div>
+      </div>
+      <div class="splitbox">
+        <div class="name">실제</div>
+        <div class="num" id="actualNet">₩0</div>
+        <div class="small" id="actualGross">세전 ₩0</div>
+      </div>
+    </div>
+    <div class="small" style="margin-top:10px">세후 65% 추정 기준</div>
+  </div>
+
+  <div class="card wide">
+    <div class="goal-row">
+      <div>
+        <div class="section" style="margin-bottom:3px">이번 달 목표</div>
+        <div class="label">최소 세후 목표</div>
+        <div class="value" id="goalValue">₩500,000</div>
+      </div>
+      <div>
+        <div class="label">목표 금액</div>
+        <input id="goalInput" type="text" inputmode="numeric" value="500,000" />
+      </div>
+    </div>
+
+    <div class="goal-block">
+      <div class="goal-head"><span>계획 달성률</span><strong id="planGoalMoney">₩0</strong></div>
+      <div class="progress"><div id="planGoalBar"></div></div>
+      <div class="goal-hint" id="planGoalHint"></div>
+    </div>
+
+    <div class="goal-block">
+      <div class="goal-head"><span>실제 누적</span><strong id="actualGoalMoney">₩0</strong></div>
+      <div class="progress thin"><div id="actualGoalBar"></div></div>
+      <div class="goal-hint" id="actualGoalHint"></div>
+    </div>
+
+    <div class="exclude-line">
+      <span>월 제외시간</span>
+      <strong id="excludeTotal">0h 00m</strong>
+      <div class="exclude-mini"><div id="excludeBar"></div></div>
+      <span id="excludeHint">20h까지 여유</span>
+    </div>
+  </div>
+
+  <div class="card side">
+    <div class="section">오늘 확보한 시간</div>
+    <div class="today">
+      <div class="label" id="todayLabel">오늘</div>
+      <div class="big" id="earned">아직 실제 출근 미입력</div>
+      <div class="small" id="earnedDetail">실제 출근시간을 입력하면 기본 출근시간과 비교합니다.</div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="field" style="flex:1">
+        <label>기본 출근</label>
+        <input id="defaultStart" type="time" value="08:30" />
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="card full">
+    <div class="tabs-wrap">
+      <div>
+        <div class="section" id="monthlyTitle" style="margin-bottom:3px">월간 계획 / 실제</div>
+        
+      </div>
+      <div>
+        <div class="tabs">
+          <button id="tabPlan" class="active">계획</button>
+          <button id="tabActual">실제</button>
+        </div>
+        <div class="small" id="calendarSummary" style="text-align:right;margin-top:5px"></div>
+      </div>
+    </div>
+    <div id="calendar" class="calendar"></div>
+  </div>
+</div>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="row" style="justify-content:space-between">
+      <h2 id="modalTitle" style="margin:0">날짜</h2>
+      <button id="closeModal">닫기</button>
+    </div>
+
+    <div class="form" style="margin-top:14px">
+      <div class="field">
+        <label>유형</label>
+        <select id="dayType">
+          <option value="work">평일 근무</option>
+          <option value="annual">연차</option>
+          <option value="dday">D-Day</option>
+          <option value="education">교육 (8h 인정)</option>
+          <option value="business">출장/외근</option>
+          <option value="holidayWork">공휴일 근무</option>
+          <option value="weekendWork">주말 근무</option>
+          <option value="off">비근무</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>입력 구분</label>
+        <select id="recordMode">
+          <option value="plan">계획</option>
+          <option value="actual">실제</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>출근</label>
+        <input id="startTime" type="time" />
+      </div>
+      <div class="field">
+        <label>퇴근</label>
+        <input id="endTime" type="time" />
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:16px">근태 제외시간</div>
+    <div class="hint">
+      평일 근무에는 중식 30분이 기본으로 들어갑니다. 연차·D-Day·교육·출장/외근·주말/공휴일 근무 등 다른 근태 유형을 선택하면 기본 중식 항목은 자동으로 제거됩니다.
+      법정휴게를 적용할 제외활동은 하루에 1개만 지정할 수 있습니다.
+    </div>
+    <div id="activities" style="margin-top:10px"></div>
+    <button id="addActivity">+ 제외시간 추가</button>
+
+    <div class="small" id="deleteHint" style="margin-top:10px;color:#667085">실제값을 잘못 입력했다면 아래의 ‘실제값 삭제’로 해당 날짜의 실제 기록만 비울 수 있습니다.</div>
+
+    <div class="preview">
+      <div><b>법정휴게</b> <span id="legalPreview">0분</span></div>
+      <div><b>추가 제외</b> <span id="extraPreview">0분</span></div>
+      <div><b>실근무</b> <span id="workPreview">0분</span></div>
+    </div>
+
+    <div class="footer">
+      <button id="deleteActual" class="danger" style="display:none">실제값 삭제</button>
+      <button id="copyPlan">계획 → 실제 복사</button>
+      <button class="primary" id="saveDay">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+const HOLIDAYS = {
+  2026:{
+    "2026-01-01":"신정",
+    "2026-02-16":"설날 연휴","2026-02-17":"설날","2026-02-18":"설날 연휴",
+    "2026-03-01":"삼일절","2026-03-02":"삼일절 대체공휴일",
+    "2026-05-01":"노동절","2026-05-05":"어린이날",
+    "2026-05-24":"부처님오신날","2026-05-25":"부처님오신날 대체공휴일",
+    "2026-06-03":"지방선거일","2026-06-06":"현충일",
+    "2026-07-17":"제헌절",
+    "2026-08-15":"광복절","2026-08-17":"광복절 대체공휴일",
+    "2026-09-24":"추석 연휴","2026-09-25":"추석","2026-09-26":"추석 연휴",
+    "2026-10-03":"개천절","2026-10-05":"개천절 대체공휴일","2026-10-09":"한글날",
+    "2026-12-25":"크리스마스"
+  },
+  2027:{
+    "2027-01-01":"신정",
+    "2027-02-06":"설날 연휴","2027-02-07":"설날","2027-02-08":"설날 연휴","2027-02-09":"설날 대체공휴일",
+    "2027-03-01":"삼일절",
+    "2027-05-01":"노동절","2027-05-03":"노동절 대체공휴일","2027-05-05":"어린이날","2027-05-13":"부처님오신날",
+    "2027-06-06":"현충일",
+    "2027-07-17":"제헌절","2027-07-19":"제헌절 대체공휴일",
+    "2027-08-15":"광복절","2027-08-16":"광복절 대체공휴일",
+    "2027-09-14":"추석 연휴","2027-09-15":"추석","2027-09-16":"추석 연휴",
+    "2027-10-03":"개천절","2027-10-04":"개천절 대체공휴일",
+    "2027-10-09":"한글날","2027-10-11":"한글날 대체공휴일",
+    "2027-12-25":"크리스마스","2027-12-27":"크리스마스 대체공휴일"
+  }
+};
+
+const STORAGE_KEY = "workPlannerStable";
+const LEGACY_KEYS = ["workPlannerV1","workPlannerV24","workPlannerStable"];
+const DEFAULT_STATE = {
+  hourly:30500,
+  fixedOTMinutes:14*60,
+  taxRate:65,
+  defaultStart:"08:30",
+  defaultEnd:"20:00",
+  goal:500000,
+  monthlyGoals:{},
+  records:{}
+};
+
+let migrationInfo = "";
+let state = loadState();
+const now = new Date();
+let currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+let viewMode = "plan";
+let selectedDate = null;
+
+function clone(x){ return JSON.parse(JSON.stringify(x)); }
+function normalizeState(raw){
+  const out=clone(DEFAULT_STATE);
+  if(!raw || typeof raw!=="object") return out;
+  out.hourly=Number(raw.hourly||30500);
+  out.fixedOTMinutes=Number(raw.fixedOTMinutes ?? raw.fixedOT ?? 14*60);
+  out.taxRate=65;
+  out.defaultStart=raw.defaultStart||"08:30";
+  out.defaultEnd=raw.defaultEnd||"20:00";
+  out.goal=Number(raw.goal||500000);
+  out.monthlyGoals=raw.monthlyGoals && typeof raw.monthlyGoals==="object" ? clone(raw.monthlyGoals) : {};
+  out.records=raw.records && typeof raw.records==="object" ? clone(raw.records) : {};
+  return out;
+}
+function meaningfulScore(st){
+  let score=0;
+  const recs=st?.records||{};
+  for(const r of Object.values(recs)){
+    for(const mode of ["plan","actual"]){
+      const x=r?.[mode]; if(!x) continue;
+      if(x.start) score += mode==="actual" ? 20 : 2;
+      if(x.end) score += mode==="actual" ? 20 : 2;
+      if(x.type && !["work","off"].includes(x.type)) score += 4;
+      if(Array.isArray(x.activities) && x.activities.some(a=>Number(a.minutes||0)>0)) score += 3;
+    }
+  }
+  return score;
+}
+function mergeStates(base, incoming){
+  const a=normalizeState(base), b=normalizeState(incoming);
+  const merged=clone(a);
+  merged.hourly=b.hourly||a.hourly;
+  merged.fixedOTMinutes=b.fixedOTMinutes||a.fixedOTMinutes;
+  merged.taxRate=b.taxRate||a.taxRate;
+  merged.defaultStart=b.defaultStart||a.defaultStart;
+  merged.defaultEnd=b.defaultEnd||a.defaultEnd;
+  merged.goal=b.goal||a.goal;
+  merged.records=Object.assign({},a.records||{});
+  for(const [k,v] of Object.entries(b.records||{})){
+    if(!merged.records[k]) merged.records[k]=clone(v);
+    else{
+      const old=merged.records[k];
+      const next=clone(old);
+      for(const mode of ["plan","actual"]){
+        const cand=v?.[mode], prev=old?.[mode];
+        if(!prev) next[mode]=clone(cand);
+        else if(cand){
+          const candScore=(cand.start?2:0)+(cand.end?2:0)+(cand.type&&!["work","off"].includes(cand.type)?1:0)+(Array.isArray(cand.activities)&&cand.activities.some(a=>Number(a.minutes||0)>0)?1:0);
+          const prevScore=(prev.start?2:0)+(prev.end?2:0)+(prev.type&&!["work","off"].includes(prev.type)?1:0)+(Array.isArray(prev.activities)&&prev.activities.some(a=>Number(a.minutes||0)>0)?1:0);
+          if(candScore>=prevScore) next[mode]=clone(cand);
+        }
+      }
+      merged.records[k]=next;
+    }
+  }
+  return merged;
+}
+function loadState(){
+  // V4.5: 현재 저장소가 존재하면 절대로 과거 저장소와 다시 합치지 않는다.
+  // 사용자 수정값이 예전 데이터에 의해 되살아나는 문제를 방지한다.
+  try{
+    const stableRaw=localStorage.getItem(STORAGE_KEY);
+    if(stableRaw){
+      const stable=JSON.parse(stableRaw);
+      return normalizeState(stable);
+    }
+  }catch(e){}
+
+  // 현재 저장소가 없는 최초 1회에만 구버전 데이터를 복구한다.
+  let found=[];
+  for(const key of ["workPlannerV1","workPlannerV24"]){
+    try{
+      const raw=JSON.parse(localStorage.getItem(key)||"null");
+      if(raw) found.push({key,state:normalizeState(raw),score:meaningfulScore(normalizeState(raw))});
+    }catch(e){}
+  }
+
+  if(!found.length) return clone(DEFAULT_STATE);
+
+  found.sort((a,b)=>a.score-b.score);
+  let merged=clone(DEFAULT_STATE);
+  for(const item of found) merged=mergeStates(merged,item.state);
+
+  migrationInfo=`${found.map(x=>x.key).join(", ")}에서 기존 데이터를 최초 1회 복구했습니다.`;
+  try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(merged)); }catch(e){}
+  return merged;
+}
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function verifySavedRecord(key,mode,expected){
+  try{
+    const raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
+    const saved=raw?.records?.[key]?.[mode];
+    return !!saved &&
+      saved.type===expected.type &&
+      saved.start===expected.start &&
+      saved.end===expected.end;
+  }catch(e){
+    return false;
+  }
+}
+function normalizeNonWorkPlanTimes(){
+  Object.keys(state.records||{}).forEach(k=>{
+    const parts=k.split("-").map(Number);
+    if(parts.length!==3) return;
+    const d=new Date(parts[0],parts[1]-1,parts[2]);
+    const r=state.records[k];
+    if(!r?.plan) return;
+
+    const holiday=isHoliday(d);
+    const weekend=isWeekend(d);
+
+    // 과거 버전에서 자동 생성된 일반 평일근무가 주말/공휴일에 남아 있으면 비근무로 정리.
+    // 사용자가 명시적으로 주말근무/공휴일근무로 바꾼 기록은 보존.
+    if((holiday || weekend) && r.plan.type==="work"){
+      r.plan.type="off";
+      r.plan.start="";
+      r.plan.end="";
+      r.plan.activities=[];
+    }
+
+    // 이미 비근무인 주말/공휴일도 시간을 깨끗하게 비움.
+    if((holiday || weekend) && r.plan.type==="off"){
+      r.plan.start="";
+      r.plan.end="";
+      r.plan.activities=[];
+    }
+  });
+}
+
+function pad(n){ return String(n).padStart(2,"0"); }
+function dateKey(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function isWeekend(d){ return d.getDay()===0 || d.getDay()===6; }
+function holidayName(d){ return HOLIDAYS[d.getFullYear()]?.[dateKey(d)] || ""; }
+function isHoliday(d){ return !!holidayName(d); }
+function hasHolidayDataset(year){
+  return !!HOLIDAYS[year];
+}
+function daysInMonth(d){ return new Date(d.getFullYear(), d.getMonth()+1, 0).getDate(); }
+function monthKey(d){
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+}
+function getMonthlyGoal(d){
+  const key=monthKey(d);
+  if(!state.monthlyGoals) state.monthlyGoals={};
+  if(state.monthlyGoals[key]===undefined){
+    // 기존 공통 목표값은 현재 보고 있는 달에만 최초 1회 승계하고,
+    // 다른 달은 기본 500,000원으로 시작.
+    const nowKey=monthKey(new Date());
+    state.monthlyGoals[key]=(key===nowKey && Number(state.goal)>0) ? Number(state.goal) : 500000;
+  }
+  return Number(state.monthlyGoals[key]||0);
+}
+function setMonthlyGoal(d,value){
+  if(!state.monthlyGoals) state.monthlyGoals={};
+  state.monthlyGoals[monthKey(d)]=Number(value||0);
+}
+
+function toMinutes(t){
+  if(!t) return null;
+  const [h,m]=t.split(":").map(Number);
+  return h*60+m;
+}
+function duration(start,end){
+  const s=toMinutes(start), e0=toMinutes(end);
+  if(s===null || e0===null) return 0;
+  return e0>=s ? e0-s : 1440-s+e0;
+}
+function formatMinutes(m){
+  m=Math.round(m);
+  const sign=m<0?"-":"";
+  m=Math.abs(m);
+  const h=Math.floor(m/60), mm=m%60;
+  if(h && mm) return `${sign}${h}시간 ${mm}분`;
+  if(h) return `${sign}${h}시간`;
+  return `${sign}${mm}분`;
+}
+function hm(m){
+  m=Math.max(0,Math.round(m));
+  return `${Math.floor(m/60)}h ${pad(m%60)}m`;
+}
+function money(n){ return "₩"+Math.round(n).toLocaleString("ko-KR"); }
+function commaNumber(n){
+  const num = Number(n||0);
+  return Math.round(num).toLocaleString("ko-KR");
+}
+function parseCommaNumber(s){
+  return Number(String(s||"").replace(/,/g,"").replace(/[^0-9.-]/g,"")) || 0;
+}
+function legalBreak(stayMinutes){
+  if(stayMinutes<270) return 0;
+  if(stayMinutes<540) return 30;
+  return 60;
+}
+
+function defaultActivities(){
+  return [{name:"중식",minutes:30,useLegal:true}];
+}
+
+function usesDefaultLunch(type){
+  return type==="work";
+}
+
+function blankActualRecord(d){
+  const nonwork=isWeekend(d)||isHoliday(d);
+  return {
+    type:nonwork?"off":"work",
+    start:"",
+    end:"",
+    activities:[]
+  };
+}
+
+function hasEnteredActual(rec){
+  if(!rec) return false;
+  if(rec.start || rec.end) return true;
+  if(["annual","dday","education","business","holidayWork","weekendWork"].includes(rec.type)) return true;
+  return Array.isArray(rec.activities) && rec.activities.some(a=>Number(a.minutes||0)>0);
+}
+
+function ensureRecord(d){
+  const k=dateKey(d);
+  if(!state.records[k]){
+    const nonwork=isWeekend(d)||isHoliday(d);
+    state.records[k]={
+      plan:{
+        type:nonwork?"off":"work",
+        start:nonwork?"":state.defaultStart,
+        end:nonwork?"":state.defaultEnd,
+        activities:nonwork?[]:defaultActivities()
+      },
+      actual:{
+        type:nonwork?"off":"work",
+        start:"",
+        end:"",
+        activities:nonwork?[]:defaultActivities()
+      }
+    };
+  }
+  return state.records[k];
+}
+
+function requiredMinutes(d){
+  const y=d.getFullYear(), m=d.getMonth();
+  let weekdays=0, holidayWeekdays=0, annualDays=0;
+  for(let i=1;i<=daysInMonth(d);i++){
+    const day=new Date(y,m,i);
+    if(!isWeekend(day)){
+      weekdays++;
+      if(isHoliday(day)) holidayWeekdays++;
+      else if(state.records[dateKey(day)]?.plan?.type==="annual") annualDays++;
+    }
+  }
+  const workdays=Math.max(0,weekdays-holidayWeekdays);
+  const monthlyCap=Math.floor((40/7)*daysInMonth(d));
+  const ordinary=workdays*8;
+  const requiredHours=Math.max(0,Math.min(ordinary,monthlyCap)-annualDays*8);
+  return requiredHours*60;
+}
+function maximumMinutes(d){
+  return Math.floor((52/7)*daysInMonth(d))*60;
+}
+
+function normalizeSingleLegalBreak(activities){
+  let used=false;
+  return (activities||[]).map(a=>{
+    const copy={...a};
+    if(copy.useLegal){
+      if(used) copy.useLegal=false;
+      else used=true;
+    }
+    return copy;
+  });
+}
+
+function calculateRecord(rec){
+  const type=rec.type||"work";
+  if(["annual","dday","off"].includes(type)){
+    return {stay:0,legal:0,extra:0,work:0,special:0,night:0};
+  }
+  if(type==="education"){
+    return {stay:480,legal:0,extra:0,work:480,special:0,night:0};
+  }
+
+  const stay=duration(rec.start,rec.end);
+  const lb=legalBreak(stay);
+
+  let legalRemaining=lb;
+  let extra=0;
+  normalizeSingleLegalBreak(rec.activities||[]).forEach(a=>{
+    const mins=Number(a.minutes||0);
+    if(a.useLegal && legalRemaining>0){
+      const used=Math.min(mins,legalRemaining);
+      legalRemaining-=used;
+      extra+=mins-used;
+    }else{
+      extra+=mins;
+    }
+  });
+
+  const work=Math.max(0,stay-lb-extra);
+
+  let night=0;
+  const s=toMinutes(rec.start), e0=toMinutes(rec.end);
+  if(s!==null && e0!==null){
+    let e=e0;
+    if(e<s) e+=1440;
+    const nightStart=22*60;
+    if(e>nightStart){
+      night=Math.min(work, Math.max(0,e-Math.max(s,nightStart)));
+    }
+  }
+
+  const special=["weekendWork","holidayWork"].includes(type)?work:0;
+  return {stay,legal:lb,extra,work,special,night};
+}
+
+function monthTotals(mode){
+  let weekday=0,special=0,night=0,total=0,extraTotal=0;
+  const y=currentMonth.getFullYear(), m=currentMonth.getMonth();
+  for(let i=1;i<=daysInMonth(currentMonth);i++){
+    const d=new Date(y,m,i);
+    const r=ensureRecord(d)[mode];
+    const c=calculateRecord(r);
+    total+=c.work;
+    extraTotal+=c.extra;
+    special+=c.special;
+    night+=c.night;
+    if(!c.special) weekday+=c.work;
+  }
+
+  const req=requiredMinutes(currentMonth);
+  const paidWeekday=Math.max(0,weekday-req-state.fixedOTMinutes);
+
+  // 일반 지급분은 1.5배, 22시 이후는 2배가 되도록 0.5배 추가.
+  const grossBase=((paidWeekday+special)/60)*state.hourly*1.5;
+  const nightExtra=(night/60)*state.hourly*0.5;
+  const gross=grossBase+nightExtra;
+  const net=gross*(0.65);
+
+  return {weekday,special,night,total,extraTotal,paidWeekday,gross,net};
+}
+
+function goalHint(t,goal){
+  const remain=goal-t.net;
+  const netPerMinute=29738/60;
+  if(remain<=0) return `목표보다 ${money(-remain)} 높음`;
+  return `${money(remain)} 부족 · 일반 평일 OT 기준 약 ${formatMinutes(Math.ceil(remain/netPerMinute))} 추가 필요`;
+}
+function planGoalHintWithLimit(t,goal){
+  const base=goalHint(t,goal);
+  const maxAllowed=maximumMinutes(currentMonth);
+  if(t.total>maxAllowed){
+    return `최대근무시간 초과 계획 · 먼저 ${formatMinutes(t.total-maxAllowed)} 줄여야 함`;
+  }
+  return base;
+}
+
+function render(){
+  const plan=monthTotals("plan");
+  const actual=monthTotals("actual");
+  const monthlyGoal=getMonthlyGoal(currentMonth);
+
+  document.getElementById("monthLabel").textContent=`${currentMonth.getFullYear()}년 ${currentMonth.getMonth()+1}월`;
+  document.getElementById("monthlyTitle").textContent=`${currentMonth.getFullYear()}년 ${currentMonth.getMonth()+1}월 월간 계획 / 실제`;
+
+  const maxAllowed=maximumMinutes(currentMonth);
+  document.getElementById("required").textContent=hm(requiredMinutes(currentMonth));
+  document.getElementById("planWorked").textContent=hm(plan.total);
+  document.getElementById("actualWorked").textContent=hm(actual.total);
+
+  const payThreshold=requiredMinutes(currentMonth)+state.fixedOTMinutes;
+  const thresholdDiff=payThreshold-actual.weekday;
+  const thresholdInline=document.getElementById("actualThresholdInline");
+
+  if(thresholdDiff>0){
+    thresholdInline.textContent=`추가수당 기준까지 ${formatMinutes(thresholdDiff)} 남음`;
+    thresholdInline.className="small";
+  }else if(thresholdDiff<0){
+    thresholdInline.textContent=`추가수당 기준 +${formatMinutes(-thresholdDiff)} 초과`;
+    thresholdInline.className="small positive";
+  }else{
+    thresholdInline.textContent="추가수당 기준 도달";
+    thresholdInline.className="small positive";
+  }
+
+  document.getElementById("maximum").textContent=hm(maxAllowed);
+
+  const limitWarning=document.getElementById("limitWarning");
+  const maximumEl=document.getElementById("maximum");
+  if(plan.total>maxAllowed){
+    const over=plan.total-maxAllowed;
+    limitWarning.style.display="block";
+    limitWarning.innerHTML=`⚠️ <strong>계획 근무시간이 최대근무시간을 ${formatMinutes(over)} 초과했습니다.</strong><br>현재 계획 ${hm(plan.total)} / 최대 ${hm(maxAllowed)} · 퇴근시간을 줄여 한도 이내로 조정하세요.`;
+    maximumEl.classList.remove("max-safe");
+    maximumEl.classList.add("max-danger");
+  }else{
+    const remain=maxAllowed-plan.total;
+    limitWarning.style.display="none";
+    limitWarning.textContent="";
+    maximumEl.classList.remove("max-danger");
+    maximumEl.classList.add("max-safe");
+  }
+  const planWorkedSub=document.getElementById("planWorkedSub");
+  if(plan.total>maxAllowed){
+    planWorkedSub.textContent=`최대근무 초과 ${formatMinutes(plan.total-maxAllowed)}`;
+    planWorkedSub.className="small negative";
+  }else{
+    planWorkedSub.textContent=`최대근무까지 ${formatMinutes(maxAllowed-plan.total)} 여유`;
+    planWorkedSub.className="small";
+  }
+
+  document.getElementById("planNet").textContent=money(plan.net);
+  document.getElementById("actualNet").textContent=money(actual.net);
+  document.getElementById("planGross").textContent=`세전 ${money(plan.gross)}`;
+  document.getElementById("actualGross").textContent=`세전 ${money(actual.gross)}`;
+
+  document.getElementById("goalValue").textContent=money(monthlyGoal);
+  document.getElementById("goalInput").value=commaNumber(monthlyGoal);
+  document.getElementById("planGoalMoney").textContent=money(plan.net);
+  document.getElementById("actualGoalMoney").textContent=money(actual.net);
+  document.getElementById("planGoalBar").style.width=(monthlyGoal?Math.min(100,plan.net/monthlyGoal*100):100)+"%";
+  document.getElementById("actualGoalBar").style.width=(monthlyGoal?Math.min(100,actual.net/monthlyGoal*100):100)+"%";
+  document.getElementById("planGoalHint").textContent=planGoalHintWithLimit(plan,monthlyGoal);
+  document.getElementById("actualGoalHint").textContent=goalHint(actual,monthlyGoal);
+
+  document.getElementById("excludeTotal").textContent=hm(plan.extraTotal);
+  const exRatio=Math.min(100,plan.extraTotal/(20*60)*100);
+  const exBar=document.getElementById("excludeBar");
+  exBar.style.width=exRatio+"%";
+  const exHint=document.getElementById("excludeHint");
+  if(plan.extraTotal>20*60){
+    exBar.style.background="var(--bad)";
+    exHint.textContent=`20h 초과 · ${formatMinutes(plan.extraTotal-20*60)}`;
+  }else if(plan.extraTotal>=18*60){
+    exBar.style.background="var(--warn)";
+    exHint.textContent=`주의 · ${formatMinutes(20*60-plan.extraTotal)} 남음`;
+  }else{
+    exBar.style.background="var(--accent)";
+    exHint.textContent=`20h까지 ${formatMinutes(20*60-plan.extraTotal)} 여유`;
+  }
+
+  document.getElementById("defaultStart").value=state.defaultStart;
+
+  const shown=viewMode==="plan"?plan:actual;
+  document.getElementById("calendarSummary").textContent=
+    `${viewMode==="plan"?"계획":"실제"} 실근무 ${hm(shown.total)}` +
+    (hasHolidayDataset(currentMonth.getFullYear()) ? "" : " · 공휴일 데이터 미등록 연도");
+  document.getElementById("tabPlan").classList.toggle("active",viewMode==="plan");
+  document.getElementById("tabActual").classList.toggle("active",viewMode==="actual");
+
+  renderToday();
+  renderCalendar();
+}
+
+function renderToday(){
+  const d=new Date();
+  document.getElementById("todayLabel").textContent=`${d.getMonth()+1}/${d.getDate()} 기준`;
+  const actual=state.records[dateKey(d)]?.actual;
+  const actualStart=toMinutes(actual?.start);
+  const base=toMinutes(state.defaultStart);
+  const earned=document.getElementById("earned");
+  const detail=document.getElementById("earnedDetail");
+
+  if(actualStart===null || actualStart===undefined){
+    earned.textContent="아직 실제 출근 미입력";
+    earned.className="big";
+    detail.textContent="실제 출근시간을 입력하면 기본 출근시간과 비교합니다.";
+    return;
+  }
+
+  const diff=base-actualStart;
+  const netPerMinute=state.hourly*1.5*(0.65)/60;
+  earned.textContent=(diff>0?"+":"")+formatMinutes(diff);
+  earned.className="big "+(diff>=0?"positive":"negative");
+
+  if(diff>0){
+    detail.innerHTML=`같은 퇴근시간이면 세후 약 <b>${money(diff*netPerMinute)}</b> 가치 · 1시간당 ₩29,738 기준 · 또는 다른 평일에 약 <b>${formatMinutes(diff)}</b> 일찍 퇴근 가능`;
+  }else if(diff<0){
+    detail.textContent=`기본 계획보다 ${formatMinutes(-diff)} 늦게 출근 · 다른 날에 그만큼 보완 필요`;
+  }else{
+    detail.textContent="기본 출근시간과 같음";
+  }
+}
+
+function renderCalendar(){
+  const cal=document.getElementById("calendar");
+  cal.innerHTML="";
+  ["일","월","화","수","목","금","토"].forEach(x=>{
+    const e=document.createElement("div");
+    e.className="dow"; e.textContent=x; cal.appendChild(e);
+  });
+
+  const y=currentMonth.getFullYear(), m=currentMonth.getMonth();
+  const firstDay=new Date(y,m,1).getDay();
+  for(let i=0;i<firstDay;i++){
+    const e=document.createElement("div");
+    e.className="day empty"; cal.appendChild(e);
+  }
+
+  for(let i=1;i<=daysInMonth(currentMonth);i++){
+    const d=new Date(y,m,i);
+    const rec=ensureRecord(d)[viewMode];
+    const c=calculateRecord(rec);
+    const hname=holidayName(d);
+
+    const e=document.createElement("div");
+    e.className="day"+(hname?" holiday":"");
+
+    const labels={
+      work:"", annual:"연차", dday:"D-Day", education:"교육",
+      business:"출장", holidayWork:"공휴일OT", weekendWork:"주말OT", off:"비근무"
+    };
+    const label=labels[rec.type]||"";
+
+    const showTimes = !["off","annual","dday"].includes(rec.type);
+    e.innerHTML=`
+      <div class="date">${i}</div>
+      ${hname?`<div class="holiday-name">${hname}</div>`:""}
+      ${showTimes ? `<div class="times">
+        ${rec.start||"--:--"} → ${rec.end||"--:--"}<br>
+        <span class="small">실근무 ${hm(c.work)}</span>
+      </div>` : ""}
+      ${label?`<span class="badge">${label}</span>`:""}
+    `;
+    e.addEventListener("click",()=>openDay(d));
+    cal.appendChild(e);
+  }
+}
+
+function openDay(d){
+  selectedDate=d;
+  const hname=holidayName(d);
+  document.getElementById("modalTitle").textContent=
+    `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일${hname?" · "+hname:""}`;
+  document.getElementById("recordMode").value=viewMode;
+  loadModalRecord();
+  document.getElementById("modalBg").style.display="flex";
+}
+
+function loadModalRecord(){
+  const mode=document.getElementById("recordMode").value;
+  const rec=ensureRecord(selectedDate)[mode];
+
+  document.getElementById("dayType").value=rec.type||"work";
+
+  const needsTime=!["annual","dday","off","education"].includes(rec.type);
+  document.getElementById("startTime").value=(rec.start!==undefined && rec.start!==null)?rec.start:(needsTime?state.defaultStart:"");
+  document.getElementById("endTime").value=(rec.end!==undefined && rec.end!==null)?rec.end:(needsTime?state.defaultEnd:"");
+
+  let acts=normalizeSingleLegalBreak(clone(rec.activities||[]));
+  if(usesDefaultLunch(rec.type) && acts.length===0){
+    acts=defaultActivities();
+  }
+  renderActivities(acts);
+  updatePreview();
+  const deleteBtn=document.getElementById("deleteActual");
+  deleteBtn.style.display=(mode==="actual")?"inline-block":"none";
+
+}
+
+function renderActivities(list){
+  const box=document.getElementById("activities");
+  box.innerHTML="";
+  list.forEach(a=>{
+    const row=document.createElement("div");
+    row.className="activity";
+    const names=["중식","조식","석식","요가","헬스장","개인용무","외출","기타"];
+    row.innerHTML=`
+      <div class="field">
+        <label>항목</label>
+        <select class="act-name">${names.map(n=>`<option ${a.name===n?"selected":""}>${n}</option>`).join("")}</select>
+      </div>
+      <div class="field">
+        <label>분</label>
+        <input class="act-min" type="number" min="0" value="${Number(a.minutes||0)}" />
+      </div>
+      <div class="field">
+        <label>법정휴게 사용</label>
+        <select class="act-legal">
+          <option value="0">아니오</option>
+          <option value="1" ${a.useLegal?"selected":""}>예</option>
+        </select>
+      </div>
+      <button class="delete-act">삭제</button>
+    `;
+    row.querySelector(".delete-act").addEventListener("click",()=>{
+      row.remove(); updatePreview();
+    });
+    row.querySelector(".act-legal").addEventListener("change",e=>{
+      if(e.target.value==="1"){
+        box.querySelectorAll(".act-legal").forEach(sel=>{
+          if(sel!==e.target) sel.value="0";
+        });
+      }
+      updatePreview();
+    });
+    row.querySelectorAll("input,.act-name").forEach(el=>el.addEventListener("input",updatePreview));
+    box.appendChild(row);
+  });
+}
+
+function collectActivities(){
+  const activities=[...document.querySelectorAll("#activities .activity")].map(row=>({
+    name:row.querySelector(".act-name").value,
+    minutes:Number(row.querySelector(".act-min").value||0),
+    useLegal:row.querySelector(".act-legal").value==="1"
+  }));
+  return normalizeSingleLegalBreak(activities);
+}
+
+function modalTempRecord(){
+  const type=document.getElementById("dayType").value;
+  return {
+    type,
+    start:document.getElementById("startTime").value,
+    end:document.getElementById("endTime").value,
+    activities:usesDefaultLunch(type)?collectActivities():[]
+  };
+}
+
+function updatePreview(){
+  if(!selectedDate) return;
+  const c=calculateRecord(modalTempRecord());
+  document.getElementById("legalPreview").textContent=formatMinutes(c.legal);
+  document.getElementById("extraPreview").textContent=formatMinutes(c.extra);
+  document.getElementById("workPreview").textContent=formatMinutes(c.work);
+}
+
+document.getElementById("prev").addEventListener("click",()=>{
+  currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()-1,1); render();
+});
+document.getElementById("next").addEventListener("click",()=>{
+  currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+1,1); render();
+});
+document.getElementById("tabPlan").addEventListener("click",()=>{ viewMode="plan"; render(); });
+document.getElementById("tabActual").addEventListener("click",()=>{ viewMode="actual"; render(); });
+
+document.getElementById("goalInput").addEventListener("input",e=>{
+  const raw=e.target.value.replace(/,/g,"").replace(/[^0-9]/g,"");
+  const value=raw===""?0:Number(raw);
+  setMonthlyGoal(currentMonth,value);
+  e.target.value=raw===""?"":Number(raw).toLocaleString("ko-KR");
+  saveState();
+
+  const plan=monthTotals("plan"), actual=monthTotals("actual");
+  const monthlyGoal=getMonthlyGoal(currentMonth);
+
+  document.getElementById("goalValue").textContent=money(monthlyGoal);
+  document.getElementById("planGoalMoney").textContent=money(plan.net);
+  document.getElementById("actualGoalMoney").textContent=money(actual.net);
+  document.getElementById("planGoalBar").style.width=(monthlyGoal?Math.min(100,plan.net/monthlyGoal*100):100)+"%";
+  document.getElementById("actualGoalBar").style.width=(monthlyGoal?Math.min(100,actual.net/monthlyGoal*100):100)+"%";
+  document.getElementById("planGoalHint").textContent=planGoalHintWithLimit(plan,monthlyGoal);
+  document.getElementById("actualGoalHint").textContent=goalHint(actual,monthlyGoal);
+});
+document.getElementById("goalInput").addEventListener("blur",e=>{ e.target.value=commaNumber(getMonthlyGoal(currentMonth)); });
+document.getElementById("defaultStart").addEventListener("change",e=>{
+  state.defaultStart=e.target.value||"08:30"; saveState(); render();
+});
+document.getElementById("exportData").addEventListener("click",()=>{
+  const payload={app:"근무 전략 플래너",version:"2.5",exportedAt:new Date().toISOString(),data:state};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download=`근무전략플래너_백업_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+});
+document.getElementById("importData").addEventListener("click",()=>document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change",e=>{
+  const file=e.target.files?.[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const parsed=JSON.parse(reader.result);
+      const incoming=parsed?.data||parsed;
+      state=mergeStates(state,incoming);
+      saveState();
+      alert("백업 데이터를 불러왔습니다.");
+      render();
+    }catch(err){ alert("백업 파일을 읽지 못했습니다."); }
+    e.target.value="";
+  };
+  reader.readAsText(file);
+});
+document.getElementById("reset").addEventListener("click",()=>{
+  if(confirm("저장된 근무 데이터를 모두 초기화할까요?")){
+    for(const key of LEGACY_KEYS) localStorage.removeItem(key);
+    location.reload();
+  }
+});
+
+document.getElementById("closeModal").addEventListener("click",()=>{
+  document.getElementById("modalBg").style.display="none";
+});
+document.getElementById("modalBg").addEventListener("click",e=>{
+  if(e.target===document.getElementById("modalBg")){
+    document.getElementById("modalBg").style.display="none";
+  }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape") document.getElementById("modalBg").style.display="none";
+});
+
+document.getElementById("recordMode").addEventListener("change",loadModalRecord);
+document.getElementById("dayType").addEventListener("change",()=>{
+  const type=document.getElementById("dayType").value;
+  const needsTime=!["annual","dday","education","off"].includes(type);
+
+  document.getElementById("startTime").disabled=!needsTime;
+  document.getElementById("endTime").disabled=!needsTime;
+
+  if(!needsTime){
+    document.getElementById("startTime").value="";
+    document.getElementById("endTime").value="";
+  }else{
+    if(!document.getElementById("startTime").value) document.getElementById("startTime").value=state.defaultStart;
+    if(!document.getElementById("endTime").value) document.getElementById("endTime").value=state.defaultEnd;
+  }
+
+  if(usesDefaultLunch(type)){
+    const acts=collectActivities();
+    if(acts.length===0) renderActivities(defaultActivities());
+  }else{
+    renderActivities([]);
+  }
+  updatePreview();
+});
+document.getElementById("startTime").addEventListener("input",updatePreview);
+document.getElementById("endTime").addEventListener("input",updatePreview);
+
+document.getElementById("addActivity").addEventListener("click",()=>{
+  const arr=collectActivities();
+  arr.push({name:"기타",minutes:0,useLegal:false});
+  renderActivities(arr);
+  updatePreview();
+});
+
+document.getElementById("deleteActual").addEventListener("click",()=>{
+  if(!selectedDate) return;
+  const rec=ensureRecord(selectedDate);
+  rec.actual=blankActualRecord(selectedDate);
+  saveState();
+
+  document.getElementById("recordMode").value="actual";
+  loadModalRecord();
+  render();
+});
+
+document.getElementById("saveDay").addEventListener("click",()=>{
+  if(!selectedDate) return;
+
+  const mode=document.getElementById("recordMode").value;
+  const edited=modalTempRecord();
+  const key=dateKey(selectedDate);
+
+  ensureRecord(selectedDate)[mode]=clone(edited);
+  saveState();
+
+  const ok=verifySavedRecord(key,mode,edited);
+  const toast=document.getElementById("saveToast");
+
+  if(!ok){
+    toast.style.display="block";
+    toast.style.background="#fff1f2";
+    toast.style.borderColor="#fecdd3";
+    toast.style.color="#9f1239";
+    toast.textContent=`저장 확인 실패: ${key} ${mode==="plan"?"계획":"실제"} 값을 다시 확인해주세요.`;
+    return;
+  }
+
+  toast.style.display="block";
+  toast.style.background="#eef8f1";
+  toast.style.borderColor="#d6ecdc";
+  toast.style.color="#35734a";
+  toast.textContent=`${key} ${mode==="plan"?"계획":"실제"} 저장됨 · ${edited.start||"--:--"} → ${edited.end||"--:--"}`;
+
+  document.getElementById("modalBg").style.display="none";
+  render();
+});
+
+document.getElementById("copyPlan").addEventListener("click",()=>{
+  const rec=ensureRecord(selectedDate);
+  rec.actual=clone(rec.plan);
+  saveState();
+  document.getElementById("recordMode").value="actual";
+  loadModalRecord();
+  render();
+});
+
+if(migrationInfo){
+  const n=document.getElementById("migrationNotice");
+  n.textContent=migrationInfo+" 이후에는 현재 저장소만 사용합니다.";
+  n.style.display="block";
+}
+normalizeNonWorkPlanTimes();
+saveState();
+
+
+
+function migrateNonWorkActivities(){
+  Object.values(state.records||{}).forEach(day=>{
+    ["plan","actual"].forEach(mode=>{
+      const rec=day?.[mode];
+      if(!rec) return;
+      if(["annual","dday","education","business","holidayWork","weekendWork","off"].includes(rec.type)){
+        rec.activities=[];
+      }
+    });
+  });
+}
+
+function migrateSingleLegalBreak(){
+  Object.values(state.records||{}).forEach(day=>{
+    ["plan","actual"].forEach(mode=>{
+      const rec=day?.[mode];
+      if(rec && Array.isArray(rec.activities)){
+        rec.activities=normalizeSingleLegalBreak(rec.activities);
+      }
+    });
+  });
+}
+
+
+function migrate2027OldDefaultPlanTimes(){
+  const flag="migration_v46_2027_0830_1800_to_2000_done";
+  if(localStorage.getItem(flag)==="1") return;
+
+  Object.entries(state.records||{}).forEach(([k,day])=>{
+    if(!k.startsWith("2027-")) return;
+    const rec=day?.plan;
+    if(!rec || rec.type!=="work") return;
+
+    const acts=Array.isArray(rec.activities)?rec.activities:[];
+    const looksLikeOldAutoDefault=
+      rec.start==="08:30" &&
+      rec.end==="18:00" &&
+      acts.length===1 &&
+      acts[0]?.name==="중식" &&
+      Number(acts[0]?.minutes||0)===30 &&
+      acts[0]?.useLegal===true;
+
+    if(looksLikeOldAutoDefault){
+      rec.end="20:00";
+    }
+  });
+
+  localStorage.setItem(flag,"1");
+}
+
+function migrateNovDec2026PlanEndTo20(){
+  // V4.4부터 자동 시간 보정 비활성화.
+  // 과거 버전의 18:00→20:00 일괄 보정이 사용자 수정값을 덮어쓰는 문제를 막기 위해
+  // 계획 시간은 더 이상 자동 변경하지 않는다.
+  return;
+}
+
+migrateNovDec2026PlanEndTo20();
+migrate2027OldDefaultPlanTimes();
+migrateSingleLegalBreak();
+migrateNonWorkActivities();
+saveState();
+render();
+</script>
+<div id="webBuildVersion" style="text-align:center;color:#98a2b3;font-size:11px;padding:10px 0 18px">Web V5.1</div>
+</body>
+</html>
