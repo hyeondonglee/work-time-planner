@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>근무 전략 플래너 Sync V5.12</title>
+<title>근무 전략 플래너 Sync V5.14</title>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
@@ -290,13 +290,93 @@ button.danger:hover{background:#ffe4e6}
 .day-tag.tag-other{background:#fff4e8;border-color:#f6dfc3;color:#9a6327}
 .day-tag.tag-more{background:#f8fafc;border-color:#e4e7ec;color:#667085}
 
+
+/* V5.13 monthly insights */
+.report-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+.report-box{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  background:#fff;
+  min-width:0;
+}
+.report-box .report-title{
+  font-size:12px;
+  font-weight:800;
+  color:var(--muted);
+  margin-bottom:7px;
+}
+.report-box .report-main{
+  font-size:18px;
+  font-weight:900;
+  line-height:1.25;
+}
+.report-box .report-sub{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:5px;
+  line-height:1.45;
+}
+.report-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:6px;
+}
+.report-chip{
+  font-size:10px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:3px 6px;
+  background:#f8fafc;
+  color:#475467;
+}
+.quest-row{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.quest{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:8px 10px;
+  background:#fff;
+}
+.quest.done{
+  background:#eef8f1;
+  border-color:#d6ecdc;
+}
+.quest .quest-name{
+  font-size:12px;
+  font-weight:800;
+}
+.quest .quest-status{
+  font-size:10px;
+  color:var(--muted);
+  white-space:nowrap;
+}
+@media(max-width:900px){
+  .report-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:620px){
+  .report-grid{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
 <div class="app">
 <header>
   <div>
-    <h1>근무 전략 플래너 Sync V5.12</h1>
+    <h1>근무 전략 플래너 Sync V5.14</h1>
     <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
   </div>
   <div class="nav">
@@ -454,6 +534,50 @@ button.danger:hover{background:#ffe4e6}
       </div>
     </div>
     <div id="calendar" class="calendar"></div>
+  </div>
+
+  <div class="card full" id="monthlyReportCard">
+    <div class="section" id="reportTitle">월간 리포트</div>
+    <div class="small" style="margin-bottom:10px">실제 입력값 기준 · 데이터가 쌓일수록 더 정확해집니다.</div>
+
+    <div class="report-grid">
+      <div class="report-box">
+        <div class="report-title">이번 달 요약</div>
+        <div class="report-main" id="reportAvgWork">-</div>
+        <div class="report-sub" id="reportSummaryText">실제 출퇴근 데이터를 입력하면 요약됩니다.</div>
+        <div class="report-list" id="reportTopActivities"></div>
+      </div>
+
+      <div class="report-box">
+        <div class="report-title">출근 습관</div>
+        <div class="report-main" id="reportEarlyCount">-</div>
+        <div class="report-sub" id="reportHabitText">평균 출근시간과 지난달 비교를 보여줍니다.</div>
+      </div>
+
+      <div class="report-box">
+        <div class="report-title">시간 → 돈</div>
+        <div class="report-main" id="reportEarnedTime">-</div>
+        <div class="report-sub" id="reportEarnedMoney">08:30보다 일찍 출근한 시간만 합산해 세후 OT 가치로 환산합니다.</div>
+      </div>
+
+      <div class="report-box">
+        <div class="report-title">이번 달 퀘스트</div>
+        <div class="quest-row">
+          <div class="quest" id="questEarly">
+            <div class="quest-name">08:00 이전 출근 3회</div>
+            <div class="quest-status" id="questEarlyStatus">0 / 3</div>
+          </div>
+          <div class="quest" id="questVeryEarly">
+            <div class="quest-name">07:00 이전 출근 1회</div>
+            <div class="quest-status" id="questVeryEarlyStatus">0 / 1</div>
+          </div>
+          <div class="quest" id="questStreak">
+            <div class="quest-name">실제값 5일 연속 기록</div>
+            <div class="quest-status" id="questStreakStatus">0 / 5</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 </div>
@@ -972,6 +1096,165 @@ function planGoalHintWithLimit(t,goal){
   return base;
 }
 
+
+function minutesToClock(m){
+  if(m===null || m===undefined || Number.isNaN(m)) return "-";
+  m=Math.round(m)%1440;
+  if(m<0) m+=1440;
+  return `${pad(Math.floor(m/60))}:${pad(m%60)}`;
+}
+
+function actualMonthAnalytics(d){
+  const y=d.getFullYear(), m=d.getMonth();
+  let starts=[], ends=[], totalWork=0, enteredDays=0, earlyBefore8=0, earlyBefore7=0, earnedMinutes=0;
+  const activityTotals={};
+  const enteredDates=[];
+
+  for(let i=1;i<=daysInMonth(d);i++){
+    const day=new Date(y,m,i);
+    const rec=state.records[dateKey(day)]?.actual;
+    if(!rec) continue;
+
+    const start=toMinutes(rec.start);
+    const end0=toMinutes(rec.end);
+    const hasActual=
+      start!==null ||
+      end0!==null ||
+      ["annual","dday","education","business","holidayWork","weekendWork"].includes(rec.type) ||
+      (Array.isArray(rec.activities) && rec.activities.some(a=>Number(a.minutes||0)>0));
+
+    if(hasActual){
+      enteredDays++;
+      enteredDates.push(i);
+    }
+
+    if(start!==null){
+      starts.push(start);
+      if(start<8*60) earlyBefore8++;
+      if(start<7*60) earlyBefore7++;
+      const base=toMinutes(state.defaultStart)||510;
+      if(start<base) earnedMinutes+=base-start;
+    }
+
+    if(end0!==null){
+      let end=end0;
+      if(start!==null && end<start) end+=1440;
+      ends.push(end);
+    }
+
+    const c=calculateRecord(rec);
+    totalWork+=c.work;
+
+    (rec.activities||[]).forEach(a=>{
+      const mins=Number(a.minutes||0);
+      if(mins<=0) return;
+      const name=a.name||"기타";
+      activityTotals[name]=(activityTotals[name]||0)+mins;
+    });
+  }
+
+  const avgStart=starts.length ? starts.reduce((a,b)=>a+b,0)/starts.length : null;
+  const avgEnd=ends.length ? ends.reduce((a,b)=>a+b,0)/ends.length : null;
+
+  const topActivities=Object.entries(activityTotals)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,3);
+
+  // 실제 기록 5일 연속: 날짜가 연속된 actual 기록의 최대 streak.
+  let maxStreak=0, streak=0, prev=null;
+  enteredDates.sort((a,b)=>a-b).forEach(dayNum=>{
+    if(prev!==null && dayNum===prev+1) streak++;
+    else streak=1;
+    maxStreak=Math.max(maxStreak,streak);
+    prev=dayNum;
+  });
+
+  return {
+    startsCount:starts.length,
+    avgStart,avgEnd,totalWork,enteredDays,earlyBefore8,earlyBefore7,
+    earnedMinutes,topActivities,maxStreak
+  };
+}
+
+function renderMonthlyReport(){
+  const a=actualMonthAnalytics(currentMonth);
+  const prevMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()-1,1);
+  const p=actualMonthAnalytics(prevMonth);
+  const actualTotals=monthTotals("actual");
+  const planTotals=monthTotals("plan");
+
+  document.getElementById("reportTitle").textContent=
+    `${currentMonth.getFullYear()}년 ${currentMonth.getMonth()+1}월 리포트`;
+
+  if(a.startsCount){
+    document.getElementById("reportAvgWork").textContent=
+      `${minutesToClock(a.avgStart)} → ${minutesToClock(a.avgEnd)}`;
+  }else{
+    document.getElementById("reportAvgWork").textContent="-";
+  }
+
+  const diff=actualTotals.total-planTotals.total;
+  const diffText=diff===0 ? "계획과 동일" :
+    diff>0 ? `계획보다 ${formatMinutes(diff)} 더 근무` :
+    `계획보다 ${formatMinutes(-diff)} 적게 근무`;
+
+  document.getElementById("reportSummaryText").textContent=
+    `실제 실근무 ${hm(actualTotals.total)} · 예상 세후 OT ${money(actualTotals.net)} · ${diffText}`;
+
+  const topBox=document.getElementById("reportTopActivities");
+  topBox.innerHTML="";
+  if(a.topActivities.length){
+    a.topActivities.forEach(([name,mins])=>{
+      const chip=document.createElement("span");
+      chip.className="report-chip";
+      chip.textContent=`${name} ${formatMinutes(mins)}`;
+      topBox.appendChild(chip);
+    });
+  }else{
+    const chip=document.createElement("span");
+    chip.className="report-chip";
+    chip.textContent="제외시간 기록 없음";
+    topBox.appendChild(chip);
+  }
+
+  document.getElementById("reportEarlyCount").textContent=
+    `08:00 이전 ${a.earlyBefore8}회 · 07:00 이전 ${a.earlyBefore7}회`;
+
+  let habitText = a.avgStart!==null ? `평균 출근 ${minutesToClock(a.avgStart)}` : "평균 출근 데이터 없음";
+  if(a.avgStart!==null && p.avgStart!==null){
+    const dmin=Math.round(p.avgStart-a.avgStart);
+    if(dmin>0) habitText += ` · 지난달보다 ${dmin}분 빨라짐`;
+    else if(dmin<0) habitText += ` · 지난달보다 ${-dmin}분 늦어짐`;
+    else habitText += " · 지난달과 동일";
+  }else if(a.avgStart!==null){
+    habitText += " · 지난달 비교 데이터 없음";
+  }
+  document.getElementById("reportHabitText").textContent=habitText;
+
+  document.getElementById("reportEarnedTime").textContent=
+    a.earnedMinutes>0 ? `+${formatMinutes(a.earnedMinutes)}` : "0분";
+  document.getElementById("reportEarnedMoney").textContent=
+    `세후 약 ${money(a.earnedMinutes*(29738/60))} 가치 · 08:30 기준 · 시간당 약 ₩29,738`;
+
+  const earlyDone=a.earlyBefore8>=3;
+  const earlyQuest=document.getElementById("questEarly");
+  earlyQuest.classList.toggle("done",earlyDone);
+  document.getElementById("questEarlyStatus").textContent=
+    earlyDone ? "완료 ✓" : `${a.earlyBefore8} / 3`;
+
+  const veryEarlyDone=a.earlyBefore7>=1;
+  const veryEarlyQuest=document.getElementById("questVeryEarly");
+  veryEarlyQuest.classList.toggle("done",veryEarlyDone);
+  document.getElementById("questVeryEarlyStatus").textContent=
+    veryEarlyDone ? "완료 ✓" : `${a.earlyBefore7} / 1`;
+
+  const streakDone=a.maxStreak>=5;
+  const streakQuest=document.getElementById("questStreak");
+  streakQuest.classList.toggle("done",streakDone);
+  document.getElementById("questStreakStatus").textContent=
+    streakDone ? "완료 ✓" : `${a.maxStreak} / 5`;
+}
+
 function render(){
   const plan=monthTotals("plan");
   const actual=monthTotals("actual");
@@ -1068,6 +1351,7 @@ function render(){
 
   renderToday();
   renderCalendar();
+  renderMonthlyReport();
 }
 
 function renderToday(){
