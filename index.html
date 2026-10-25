@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>근무 전략 플래너 Sync V5.9</title>
+<title>근무 전략 플래너 Sync V5.10</title>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
@@ -267,7 +267,7 @@ button.danger:hover{background:#ffe4e6}
 <div class="app">
 <header>
   <div>
-    <h1>근무 전략 플래너 Sync V5.9</h1>
+    <h1>근무 전략 플래너 Sync V5.10</h1>
     <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
   </div>
   <div class="nav">
@@ -482,6 +482,7 @@ button.danger:hover{background:#ffe4e6}
       <div><b>실근무</b> <span id="workPreview">0분</span></div>
     </div>
 
+    <div class="small" style="margin-top:10px">Enter로 저장 후 닫기 · Shift+Enter는 저장하지 않음</div>
     <div class="footer">
       <button id="deleteActual" class="danger" style="display:none">실제값 삭제</button>
       <button id="copyPlan">계획 → 실제 복사</button>
@@ -1539,6 +1540,20 @@ document.getElementById("saveDay").addEventListener("click",()=>{
   document.getElementById("modalBg").style.display="none";
   render();
 });
+
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter" || e.shiftKey) return;
+
+  const modal=document.getElementById("modalBg");
+  if(!modal || modal.style.display==="none") return;
+
+  // Avoid accidental save from buttons / selects while keyboard-operating them.
+  if(e.target && (e.target.tagName==="BUTTON" || e.target.tagName==="SELECT")) return;
+
+  e.preventDefault();
+  document.getElementById("saveDay").click();
+});
+
 
 document.getElementById("copyPlan").addEventListener("click",()=>{
   const rec=ensureRecord(selectedDate);
