@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>근무 전략 플래너 Sync V5.18</title>
+<title>근무 전략 플래너 Sync V5.34</title>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --text:#17202a; --muted:#6b7785;
@@ -184,7 +184,7 @@ button.danger:hover{background:#ffe4e6}
 }
 
 
-/* V5.9 clean A-style activity editor */
+/* V5.32 activity editor with optional time metadata */
 #activities{
   width:100%;
 }
@@ -193,6 +193,7 @@ button.danger:hover{background:#ffe4e6}
   grid-template-columns:minmax(0,2fr) minmax(72px,.8fr) minmax(0,1.35fr) 52px !important;
   grid-template-areas:
     "name minutes legal delete"
+    "time time time time"
     "reason reason reason reason";
   column-gap:8px;
   row-gap:7px;
@@ -205,6 +206,7 @@ button.danger:hover{background:#ffe4e6}
 .activity > .field:nth-child(1){grid-area:name}
 .activity > .field:nth-child(2){grid-area:minutes}
 .activity > .field:nth-child(3){grid-area:legal}
+.activity > .act-time-wrap{grid-area:time}
 .activity > .act-reason-wrap{grid-area:reason}
 .activity > .delete-act{grid-area:delete}
 
@@ -230,6 +232,31 @@ button.danger:hover{background:#ffe4e6}
   white-space:nowrap;
   align-self:end;
 }
+.activity .act-time-wrap{
+  min-width:0;
+}
+.activity .act-time-label{
+  display:block;
+  white-space:nowrap;
+  margin-bottom:5px;
+  font-size:11px;
+  color:var(--muted);
+}
+.activity .act-time-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr);
+  gap:6px;
+  align-items:center;
+}
+.activity .act-time-arrow{
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+}
+.activity .act-time{
+  width:100%;
+  box-sizing:border-box;
+}
 .activity .act-reason-wrap{
   display:none;
 }
@@ -245,11 +272,13 @@ button.danger:hover{background:#ffe4e6}
     grid-template-columns:minmax(0,1.7fr) 72px minmax(0,1fr) 46px !important;
     column-gap:6px;
   }
-  .activity .field label{
+  .activity .field label,
+  .activity .act-time-label{
     font-size:10px;
   }
   .activity .field input,
-  .activity .field select{
+  .activity .field select,
+  .activity .act-time{
     padding:8px 6px;
     font-size:13px;
   }
@@ -370,13 +399,212 @@ button.danger:hover{background:#ffe4e6}
   .report-grid{grid-template-columns:1fr}
 }
 
+
+/* V5.19 advanced work insights */
+.insight-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.insight-box{
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+  padding:12px;
+  min-width:0;
+}
+.insight-box.full{grid-column:1/-1}
+.insight-title{
+  font-size:12px;
+  font-weight:800;
+  color:var(--muted);
+  margin-bottom:7px;
+}
+.insight-main{
+  font-size:18px;
+  font-weight:900;
+  line-height:1.3;
+}
+.insight-sub{
+  margin-top:6px;
+  font-size:11px;
+  color:var(--muted);
+  line-height:1.5;
+}
+.insight-note{
+  margin-top:8px;
+  padding:8px 10px;
+  border-radius:9px;
+  background:#f8fafc;
+  font-size:11px;
+  line-height:1.5;
+  color:#475467;
+}
+.metric-row{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+  margin-top:8px;
+}
+.metric-mini{
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:8px;
+  background:#fbfcfe;
+}
+.metric-mini .k{
+  font-size:10px;
+  color:var(--muted);
+}
+.metric-mini .v{
+  margin-top:2px;
+  font-size:14px;
+  font-weight:800;
+}
+.bucket-list{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-top:8px;
+}
+.bucket-row{
+  display:grid;
+  grid-template-columns:86px 1fr auto;
+  gap:8px;
+  align-items:center;
+  font-size:11px;
+}
+.bucket-label{font-weight:700}
+.bucket-track{
+  height:7px;
+  border-radius:999px;
+  background:#eef2f6;
+  overflow:hidden;
+}
+.bucket-fill{
+  height:100%;
+  border-radius:999px;
+  background:var(--accent);
+}
+.bucket-value{
+  min-width:74px;
+  text-align:right;
+  color:#475467;
+  white-space:nowrap;
+}
+.weekday-table,.trend-table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:7px;
+  font-size:11px;
+}
+.weekday-table th,.weekday-table td,
+.trend-table th,.trend-table td{
+  padding:6px 5px;
+  border-bottom:1px solid var(--line);
+  text-align:right;
+  white-space:nowrap;
+}
+.weekday-table th:first-child,.weekday-table td:first-child,
+.trend-table th:first-child,.trend-table td:first-child{
+  text-align:left;
+}
+.weekday-table th,.trend-table th{
+  color:var(--muted);
+  font-weight:700;
+}
+.strategy-list{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  margin-top:8px;
+}
+.strategy-item{
+  padding:9px 10px;
+  border-radius:9px;
+  border:1px solid var(--line);
+  background:#fbfcfe;
+  font-size:12px;
+  line-height:1.5;
+}
+.strategy-item strong{font-weight:900}
+.trend-scroll{overflow-x:auto}
+.trend-bar-wrap{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-width:130px;
+}
+.trend-bar{
+  width:78px;
+  height:6px;
+  background:#eef2f6;
+  border-radius:999px;
+  overflow:hidden;
+}
+.trend-bar > span{
+  display:block;
+  height:100%;
+  background:var(--accent);
+  border-radius:999px;
+}
+@media(max-width:760px){
+  .insight-grid{grid-template-columns:1fr}
+  .insight-box.full{grid-column:auto}
+  .metric-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bucket-row{grid-template-columns:78px 1fr auto}
+}
+
+
+.day-tag.tag-gwp{
+  background:#eef4ff;
+  border-color:#d9e4ff;
+  color:#315ea8;
+  font-weight:800;
+}
+
+
+/* V5.31 extended trend + alignment */
+.trend-table{
+  min-width:980px;
+}
+.trend-table th,.trend-table td{
+  padding-left:6px;
+  padding-right:6px;
+}
+.trend-table th:nth-child(4),
+.trend-table td:nth-child(4){
+  text-align:left !important;
+  min-width:180px;
+}
+.trend-table td:nth-child(4) .trend-bar-wrap{
+  justify-content:flex-start;
+}
+.trend-table th:nth-child(n+5),
+.trend-table td:nth-child(n+5){
+  text-align:center !important;
+  min-width:64px;
+}
+.trend-bar-wrap{
+  min-width:170px;
+}
+
+
+/* V5.34 exclusion terminology */
+.exclude-line .exclude-activity-note{
+  flex-basis:100%;
+  margin-top:2px;
+  font-size:11px;
+  color:var(--muted);
+}
+
 </style>
 </head>
 <body>
 <div class="app">
 <header>
   <div>
-    <h1>근무 전략 플래너 Sync V5.18</h1>
+    <h1>근무 전략 플래너 Sync V5.34</h1>
     <div class="sub">시간 ↔ 돈 ↔ 다른 날의 자유시간</div>
   </div>
   <div class="nav">
@@ -466,7 +694,7 @@ button.danger:hover{background:#ffe4e6}
       </div>
     </div>
     <div class="small" style="margin-top:10px">
-      적용 시급 <strong id="hourlyRateDisplay">₩30,500</strong> · 세후 65% 추정 기준
+      적용 시급 <strong id="hourlyRateDisplay">₩30,500</strong><span id="hourlyRateNote"></span> · 세후 65% 추정 기준
     </div>
   </div>
 
@@ -496,10 +724,11 @@ button.danger:hover{background:#ffe4e6}
     </div>
 
     <div class="exclude-line">
-      <span>월 제외시간</span>
+      <span id="excludeLabel">월 추가 제외시간 · 계획</span>
       <strong id="excludeTotal">0h 00m</strong>
       <div class="exclude-mini"><div id="excludeBar"></div></div>
       <span id="excludeHint">20h까지 여유</span>
+      <span class="exclude-activity-note" id="activityTotalHint">기록된 활동시간 0h 00m</span>
     </div>
   </div>
 
@@ -564,14 +793,96 @@ button.danger:hover{background:#ffe4e6}
         <div class="report-title">이번 달 퀘스트</div>
         <div class="quest-row">
           <div class="quest" id="questEarly">
-            <div class="quest-name">08:00 이전 출근 3회</div>
-            <div class="quest-status" id="questEarlyStatus">0 / 3</div>
+            <div class="quest-name">08:00 이전 출근 5회</div>
+            <div class="quest-status" id="questEarlyStatus">0 / 5</div>
           </div>
           <div class="quest" id="questVeryEarly">
-            <div class="quest-name">07:00 이전 출근 3회</div>
-            <div class="quest-status" id="questVeryEarlyStatus">0 / 3</div>
+            <div class="quest-name">07:00 이전 출근 5회</div>
+            <div class="quest-status" id="questVeryEarlyStatus">0 / 5</div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card full" id="advancedInsightsCard">
+    <div class="section" id="insightsTitle">근무 인사이트</div>
+    <div class="small" style="margin-bottom:10px">
+      실제값과 계획값을 비교해 근무 패턴과 월말 전략을 분석합니다. 표본이 적으면 결론을 보류합니다.
+    </div>
+
+    <div class="insight-grid">
+      <div class="insight-box">
+        <div class="insight-title">출근시간별 실근무</div>
+        <div class="insight-main" id="earlyImpactMain">-</div>
+        <div class="insight-sub" id="earlyImpactSub">출근시간대별로 실제 실근무시간을 비교합니다.</div>
+        <div class="bucket-list" id="earlyImpactBuckets"></div>
+      </div>
+
+      <div class="insight-box">
+        <div class="insight-title">조기출근 효율</div>
+        <div class="insight-main" id="earlyEfficiencyMain">-</div>
+        <div class="insight-sub" id="earlyEfficiencySub">
+          계획보다 일찍 출근한 시간이 실제 실근무 증가로 얼마나 남았는지 봅니다.
+        </div>
+        <div class="metric-row">
+          <div class="metric-mini"><div class="k">조기출근</div><div class="v" id="earlyMinutesValue">-</div></div>
+          <div class="metric-mini"><div class="k">실근무로 남은 시간</div><div class="v" id="retainedMinutesValue">-</div></div>
+        </div>
+      </div>
+
+      <div class="insight-box">
+        <div class="insight-title">계획 적중률</div>
+        <div class="insight-main" id="planAccuracyMain">-</div>
+        <div class="insight-sub" id="planAccuracySub">계획과 실제가 모두 입력된 날만 비교합니다.</div>
+        <div class="metric-row">
+          <div class="metric-mini"><div class="k">출근 평균 오차</div><div class="v" id="startErrorValue">-</div></div>
+          <div class="metric-mini"><div class="k">퇴근 평균 오차</div><div class="v" id="endErrorValue">-</div></div>
+        </div>
+      </div>
+
+      <div class="insight-box">
+        <div class="insight-title">OT 목표 도달 예상</div>
+        <div class="insight-main" id="goalForecastMain">-</div>
+        <div class="insight-sub" id="goalForecastSub">현재까지 실제 + 남은 날짜의 계획을 합쳐 예상합니다.</div>
+      </div>
+
+      <div class="insight-box">
+        <div class="insight-title">시간 → 자유</div>
+        <div class="insight-main" id="freedomMain">-</div>
+        <div class="insight-sub" id="freedomSub">
+          08:30보다 일찍 출근해 확보한 시간을 재미로 자유시간 단위로 환산합니다.
+        </div>
+      </div>
+
+      <div class="insight-box">
+        <div class="insight-title">요일별 패턴</div>
+        <div class="insight-sub">회식 같은 튀는 날 영향을 줄이기 위해 평균과 중앙값을 함께 표시합니다.</div>
+        <div style="overflow-x:auto">
+          <table class="weekday-table">
+            <thead>
+              <tr><th>요일</th><th>표본</th><th>평균 출근</th><th>평균 실근무</th><th>중앙 실근무</th></tr>
+            </thead>
+            <tbody id="weekdayPatternBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="insight-box full">
+        <div class="insight-title">장기 트렌드 · 최근 6개월</div>
+        <div class="trend-scroll">
+          <table class="trend-table">
+            <thead>
+              <tr><th>월</th><th>평균 출근</th><th>실근무</th><th>예상 세후 OT</th><th>07시 이전</th><th>08시 이전</th><th>20시 이후</th><th>21시 이후</th></tr>
+            </thead>
+            <tbody id="trendBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="insight-box full">
+        <div class="insight-title">이번 달 근무 전략</div>
+        <div class="strategy-list" id="strategyList"></div>
       </div>
     </div>
   </div>
@@ -593,7 +904,9 @@ button.danger:hover{background:#ffe4e6}
           <option value="annual">연차</option>
           <option value="dday">D-Day</option>
           <option value="education">교육 (8h 인정)</option>
+          <option value="healthcheck">건강검진 (8h 인정)</option>
           <option value="business">출장/외근</option>
+            <option value="gwp">GWP</option>
           <option value="holidayWork">공휴일 근무</option>
           <option value="weekendWork">주말 근무</option>
           <option value="off">비근무</option>
@@ -608,17 +921,17 @@ button.danger:hover{background:#ffe4e6}
       </div>
       <div class="field">
         <label>출근</label>
-        <input id="startTime" type="time" />
+        <input id="startTime" type="text" inputmode="numeric" autocomplete="off" placeholder="HH:MM" maxlength="5" />
       </div>
       <div class="field">
         <label>퇴근</label>
-        <input id="endTime" type="time" />
+        <input id="endTime" type="text" inputmode="numeric" autocomplete="off" placeholder="HH:MM" maxlength="5" />
       </div>
     </div>
 
     <div class="section" style="margin-top:16px">근태 제외시간</div>
     <div class="hint">
-      평일 근무에는 중식 30분이 기본으로 들어갑니다. 항목·분·법정휴게 사용을 한 줄에서 빠르게 수정할 수 있으며, 기타를 선택한 경우에만 아래에 사유 입력란이 표시됩니다.
+      평일 근무에는 중식 30분이 기본으로 들어갑니다. 새 제외시간에서 조식·중식을 선택하면 10분이 자동 입력됩니다. 시작·종료 시간은 선택사항이며 둘 다 입력하면 분이 자동 계산됩니다. 계산에는 기존처럼 ‘분’ 값만 사용합니다.
     </div>
     <div id="activities" style="margin-top:10px"></div>
     <button id="addActivity">+ 제외시간 추가</button>
@@ -631,7 +944,7 @@ button.danger:hover{background:#ffe4e6}
       <div><b>실근무</b> <span id="workPreview">0분</span></div>
     </div>
 
-    <div class="small" style="margin-top:10px">Enter로 저장 후 닫기 · Shift+Enter는 저장하지 않음</div>
+    <div class="small" style="margin-top:10px">시간은 0830 → 08:30처럼 키보드 입력 가능 · Enter로 저장 후 닫기 · Shift+Enter는 저장하지 않음</div>
     <div class="footer">
       <button id="deleteActual" class="danger" style="display:none">실제값 삭제</button>
       <button id="copyPlan">계획 → 실제 복사</button>
@@ -929,11 +1242,11 @@ function legalBreak(stayMinutes){
 }
 
 function defaultActivities(){
-  return [{name:"중식",minutes:30,useLegal:true,reason:""}];
+  return [{name:"중식",minutes:30,useLegal:true,reason:"",startTime:"",endTime:""}];
 }
 
 function usesDefaultLunch(type){
-  return type==="work";
+  return type==="work" || type==="gwp";
 }
 
 function blankActualRecord(d){
@@ -949,7 +1262,7 @@ function blankActualRecord(d){
 function hasEnteredActual(rec){
   if(!rec) return false;
   if(rec.start || rec.end) return true;
-  if(["annual","dday","education","business","holidayWork","weekendWork"].includes(rec.type)) return true;
+  if(["annual","dday","education","healthcheck","business","gwp","holidayWork","weekendWork"].includes(rec.type)) return true;
   return Array.isArray(rec.activities) && rec.activities.some(a=>Number(a.minutes||0)>0);
 }
 
@@ -975,22 +1288,76 @@ function ensureRecord(d){
   return state.records[k];
 }
 
+
+const HOURLY_RATE_HISTORY=[
+  // 적용 시작월(YYYY-MM) 기준. 새 연봉/시급이 확정되면 한 줄만 추가하면 됩니다.
+  {from:"2026-01", hourly:29113, note:"2025년도 연봉 기준"},
+  {from:"2026-03", hourly:30500, note:"2026년도 연봉 기준"}
+];
+
+function monthKeyNumber(d){
+  return d.getFullYear()*100 + (d.getMonth()+1);
+}
+
+function hourlyRateInfoForMonth(d){
+  const target=monthKeyNumber(d);
+  let applied=HOURLY_RATE_HISTORY[0];
+
+  HOURLY_RATE_HISTORY.forEach(item=>{
+    const [y,m]=item.from.split("-").map(Number);
+    const key=y*100+m;
+    if(key<=target) applied=item;
+  });
+
+  return applied;
+}
+
+function hourlyRateForMonth(d){
+  return hourlyRateInfoForMonth(d).hourly;
+}
+
+function hourlyRateNoteForMonth(d){
+  return hourlyRateInfoForMonth(d).note || "";
+}
+
+function netOtHourlyForMonth(d){
+  return hourlyRateForMonth(d)*1.5*0.65;
+}
+
 function requiredMinutes(d){
   const y=d.getFullYear(), m=d.getMonth();
-  let weekdays=0, holidayWeekdays=0, annualDays=0;
+  let weekdays=0, holidayWeekdays=0, annualDays=0, gwpDays=0;
+
   for(let i=1;i<=daysInMonth(d);i++){
     const day=new Date(y,m,i);
+
     if(!isWeekend(day)){
       weekdays++;
-      if(isHoliday(day)) holidayWeekdays++;
-      else if(state.records[dateKey(day)]?.plan?.type==="annual") annualDays++;
+
+      if(isHoliday(day)){
+        holidayWeekdays++;
+      }else{
+        const dayState=state.records[dateKey(day)] || {};
+        const planType=dayState.plan?.type;
+        const actualType=dayState.actual?.type;
+
+        if(planType==="annual") annualDays++;
+
+        // 과거 실제값 크로스체크와 미래 계획 모두 대응:
+        // 계획 또는 실제 중 하나라도 GWP면 해당 날짜는 1회만 -2시간.
+        if(planType==="gwp" || actualType==="gwp") gwpDays++;
+      }
     }
   }
+
   const workdays=Math.max(0,weekdays-holidayWeekdays);
   const monthlyCap=Math.floor((40/7)*daysInMonth(d));
   const ordinary=workdays*8;
-  const requiredHours=Math.max(0,Math.min(ordinary,monthlyCap)-annualDays*8);
-  return requiredHours*60;
+
+  // 기존 필수근무 계산은 그대로 유지하고,
+  // GWP 근태 1일당 월 필수근무시간에서 2시간(120분) 추가 차감.
+  const requiredMinutesBase=Math.max(0,Math.min(ordinary,monthlyCap)-annualDays*8)*60;
+  return Math.max(0,requiredMinutesBase-gwpDays*120);
 }
 function maximumMinutes(d){
   return Math.floor((52/7)*daysInMonth(d))*60;
@@ -1001,6 +1368,8 @@ function normalizeSingleLegalBreak(activities){
   return (activities||[]).map(a=>{
     const copy={...a};
     copy.reason = copy.name==="기타" ? String(copy.reason||"") : "";
+    copy.startTime = String(copy.startTime||"");
+    copy.endTime = String(copy.endTime||"");
     if(copy.useLegal){
       if(used) copy.useLegal=false;
       else used=true;
@@ -1012,10 +1381,10 @@ function normalizeSingleLegalBreak(activities){
 function calculateRecord(rec){
   const type=rec.type||"work";
   if(["annual","dday","off"].includes(type)){
-    return {stay:0,legal:0,extra:0,work:0,special:0,night:0};
+    return {stay:0,legal:0,extra:0,activityTotal:0,work:0,special:0,night:0};
   }
-  if(type==="education"){
-    return {stay:480,legal:0,extra:0,work:480,special:0,night:0};
+  if(type==="education" || type==="healthcheck"){
+    return {stay:480,legal:0,extra:0,activityTotal:0,work:480,special:0,night:0};
   }
 
   const stay=duration(rec.start,rec.end);
@@ -1023,8 +1392,10 @@ function calculateRecord(rec){
 
   let legalRemaining=lb;
   let extra=0;
+  let activityTotal=0;
   normalizeSingleLegalBreak(rec.activities||[]).forEach(a=>{
-    const mins=Number(a.minutes||0);
+    const mins=Math.max(0,Number(a.minutes||0));
+    activityTotal+=mins;
     if(a.useLegal && legalRemaining>0){
       const used=Math.min(mins,legalRemaining);
       legalRemaining-=used;
@@ -1048,11 +1419,11 @@ function calculateRecord(rec){
   }
 
   const special=["weekendWork","holidayWork"].includes(type)?work:0;
-  return {stay,legal:lb,extra,work,special,night};
+  return {stay,legal:lb,extra,activityTotal,work,special,night};
 }
 
 function monthTotals(mode){
-  let weekday=0,special=0,night=0,total=0,extraTotal=0;
+  let weekday=0,special=0,night=0,total=0,extraTotal=0,activityTotal=0;
   const y=currentMonth.getFullYear(), m=currentMonth.getMonth();
   for(let i=1;i<=daysInMonth(currentMonth);i++){
     const d=new Date(y,m,i);
@@ -1060,6 +1431,7 @@ function monthTotals(mode){
     const c=calculateRecord(r);
     total+=c.work;
     extraTotal+=c.extra;
+    activityTotal+=c.activityTotal||0;
     special+=c.special;
     night+=c.night;
     if(!c.special) weekday+=c.work;
@@ -1069,17 +1441,17 @@ function monthTotals(mode){
   const paidWeekday=Math.max(0,weekday-req-state.fixedOTMinutes);
 
   // 일반 지급분은 1.5배, 22시 이후는 2배가 되도록 0.5배 추가.
-  const grossBase=((paidWeekday+special)/60)*state.hourly*1.5;
-  const nightExtra=(night/60)*state.hourly*0.5;
+  const grossBase=((paidWeekday+special)/60)*hourlyRateForMonth(currentMonth)*1.5;
+  const nightExtra=(night/60)*hourlyRateForMonth(currentMonth)*0.5;
   const gross=grossBase+nightExtra;
   const net=gross*(0.65);
 
-  return {weekday,special,night,total,extraTotal,paidWeekday,gross,net};
+  return {weekday,special,night,total,extraTotal,activityTotal,paidWeekday,gross,net};
 }
 
 function goalHint(t,goal){
   const remain=goal-t.net;
-  const netPerMinute=29738/60;
+  const netPerMinute=netOtHourlyForMonth(currentMonth)/60;
   if(remain<=0) return `목표보다 ${money(-remain)} 높음`;
   return `${money(remain)} 부족 · 일반 평일 OT 기준 약 ${formatMinutes(Math.ceil(remain/netPerMinute))} 추가 필요`;
 }
@@ -1102,7 +1474,7 @@ function minutesToClock(m){
 
 function actualMonthAnalytics(d){
   const y=d.getFullYear(), m=d.getMonth();
-  let starts=[], ends=[], totalWork=0, enteredDays=0, earlyBefore8=0, earlyBefore7=0, earnedMinutes=0;
+  let starts=[], ends=[], totalWork=0, enteredDays=0, earlyBefore8=0, earlyBefore7=0, lateAfter20=0, lateAfter21=0, earnedMinutes=0;
   const activityTotals={};
   const enteredDates=[];
 
@@ -1116,7 +1488,7 @@ function actualMonthAnalytics(d){
     const hasActual=
       start!==null ||
       end0!==null ||
-      ["annual","dday","education","business","holidayWork","weekendWork"].includes(rec.type) ||
+      ["annual","dday","education","healthcheck","business","gwp","holidayWork","weekendWork"].includes(rec.type) ||
       (Array.isArray(rec.activities) && rec.activities.some(a=>Number(a.minutes||0)>0));
 
     if(hasActual){
@@ -1136,6 +1508,9 @@ function actualMonthAnalytics(d){
       let end=end0;
       if(start!==null && end<start) end+=1440;
       ends.push(end);
+
+      if(end0>=20*60) lateAfter20++;
+      if(end0>=21*60) lateAfter21++;
     }
 
     const c=calculateRecord(rec);
@@ -1158,7 +1533,7 @@ function actualMonthAnalytics(d){
 
   return {
     startsCount:starts.length,
-    avgStart,avgEnd,totalWork,enteredDays,earlyBefore8,earlyBefore7,
+    avgStart,avgEnd,totalWork,enteredDays,earlyBefore8,earlyBefore7,lateAfter20,lateAfter21,
     earnedMinutes,topActivities
   };
 }
@@ -1221,19 +1596,506 @@ function renderMonthlyReport(){
   document.getElementById("reportEarnedTime").textContent=
     a.earnedMinutes>0 ? `+${formatMinutes(a.earnedMinutes)}` : "0분";
   document.getElementById("reportEarnedMoney").textContent=
-    `08:30 기준 · 세후 약 ${money(a.earnedMinutes*(29738/60))} 가치 · 시간당 약 ₩29,738로 환산`;
+    `08:30 기준 · 세후 약 ${money(a.earnedMinutes*(netOtHourlyForMonth(currentMonth)/60))} 가치 · 시간당 약 ${money(netOtHourlyForMonth(currentMonth))}로 환산`;
 
-  const earlyDone=a.earlyBefore8>=3;
+  const earlyDone=a.earlyBefore8>=5;
   const earlyQuest=document.getElementById("questEarly");
   earlyQuest.classList.toggle("done",earlyDone);
   document.getElementById("questEarlyStatus").textContent=
-    earlyDone ? "완료 ✓" : `${a.earlyBefore8} / 3`;
+    earlyDone ? `${a.earlyBefore8} / 5 · 완료 ✓` : `${a.earlyBefore8} / 5`;
 
-  const veryEarlyDone=a.earlyBefore7>=3;
+  const veryEarlyDone=a.earlyBefore7>=5;
   const veryEarlyQuest=document.getElementById("questVeryEarly");
   veryEarlyQuest.classList.toggle("done",veryEarlyDone);
   document.getElementById("questVeryEarlyStatus").textContent=
-    veryEarlyDone ? "완료 ✓" : `${a.earlyBefore7} / 3`;
+    veryEarlyDone ? `${a.earlyBefore7} / 5 · 완료 ✓` : `${a.earlyBefore7} / 5`;
+}
+
+
+function median(values){
+  const arr=(values||[]).filter(v=>Number.isFinite(v)).slice().sort((a,b)=>a-b);
+  if(!arr.length) return null;
+  const mid=Math.floor(arr.length/2);
+  return arr.length%2 ? arr[mid] : (arr[mid-1]+arr[mid])/2;
+}
+
+function meaningfulActual(rec){
+  if(!rec) return false;
+  if(rec.start || rec.end) return true;
+  return ["annual","dday","education","healthcheck","business","gwp","holidayWork","weekendWork"].includes(rec.type);
+}
+
+function workActualReady(rec){
+  return !!rec && !!rec.start && !!rec.end &&
+    !["off","annual","dday"].includes(rec.type||"work");
+}
+
+function recordAt(d,mode){
+  return state.records?.[dateKey(d)]?.[mode] || null;
+}
+
+function totalsForMonthByResolver(d,resolver,throughDay=null){
+  let weekday=0,special=0,night=0,total=0,extraTotal=0,activityTotal=0;
+  const y=d.getFullYear(),m=d.getMonth();
+  const last=throughDay===null ? daysInMonth(d) : Math.min(daysInMonth(d),throughDay);
+  for(let i=1;i<=last;i++){
+    const day=new Date(y,m,i);
+    const rec=resolver(day,i);
+    if(!rec) continue;
+    const c=calculateRecord(rec);
+    total+=c.work;
+    extraTotal+=c.extra;
+    activityTotal+=c.activityTotal||0;
+    special+=c.special;
+    night+=c.night;
+    if(!c.special) weekday+=c.work;
+  }
+  const req=requiredMinutes(d);
+  const paidWeekday=Math.max(0,weekday-req-state.fixedOTMinutes);
+  const grossBase=((paidWeekday+special)/60)*hourlyRateForMonth(d)*1.5;
+  const nightExtra=(night/60)*hourlyRateForMonth(d)*0.5;
+  const gross=grossBase+nightExtra;
+  const net=gross*0.65;
+  return {weekday,special,night,total,extraTotal,activityTotal,paidWeekday,gross,net};
+}
+
+function actualTotalsForMonth(d){
+  return totalsForMonthByResolver(d,day=>recordAt(day,"actual"));
+}
+
+function planTotalsForMonth(d){
+  return totalsForMonthByResolver(d,day=>recordAt(day,"plan") || ensureRecord(day).plan);
+}
+
+function earlyArrivalImpact(d){
+  const buckets=[
+    {key:"before7",label:"07:00 이전",works:[]},
+    {key:"7to8",label:"07~08시",works:[]},
+    {key:"8to830",label:"08~08:30",works:[]},
+    {key:"after830",label:"08:30 이후",works:[]}
+  ];
+  const y=d.getFullYear(),m=d.getMonth();
+  for(let i=1;i<=daysInMonth(d);i++){
+    const day=new Date(y,m,i);
+    const rec=recordAt(day,"actual");
+    if(!workActualReady(rec)) continue;
+    const s=toMinutes(rec.start);
+    if(s===null) continue;
+    const w=calculateRecord(rec).work;
+    if(s<420) buckets[0].works.push(w);
+    else if(s<480) buckets[1].works.push(w);
+    else if(s<510) buckets[2].works.push(w);
+    else buckets[3].works.push(w);
+  }
+  return buckets.map(b=>({
+    ...b,
+    n:b.works.length,
+    avg:b.works.length ? b.works.reduce((a,v)=>a+v,0)/b.works.length : null,
+    med:median(b.works)
+  }));
+}
+
+function earlyEfficiency(d){
+  let early=0,retained=0,days=0;
+  const y=d.getFullYear(),m=d.getMonth();
+  for(let i=1;i<=daysInMonth(d);i++){
+    const day=new Date(y,m,i);
+    const actual=recordAt(day,"actual");
+    const plan=recordAt(day,"plan");
+    if(!workActualReady(actual) || !plan?.start || !plan?.end) continue;
+    const as=toMinutes(actual.start), ps=toMinutes(plan.start);
+    if(as===null || ps===null || as>=ps) continue;
+    const earlyMin=ps-as;
+    const actualWork=calculateRecord(actual).work;
+    const planWork=calculateRecord(plan).work;
+    const kept=Math.max(0,Math.min(earlyMin,actualWork-planWork));
+    early+=earlyMin;
+    retained+=kept;
+    days++;
+  }
+  return {early,retained,days,rate:early>0?retained/early:null};
+}
+
+function planAccuracy(d){
+  let absStart=0,absEnd=0,absWork=0,planWorkSum=0,n=0;
+  const y=d.getFullYear(),m=d.getMonth();
+  for(let i=1;i<=daysInMonth(d);i++){
+    const day=new Date(y,m,i);
+    const actual=recordAt(day,"actual");
+    const plan=recordAt(day,"plan");
+    if(!workActualReady(actual) || !plan?.start || !plan?.end) continue;
+    let as=toMinutes(actual.start), ae=toMinutes(actual.end);
+    let ps=toMinutes(plan.start), pe=toMinutes(plan.end);
+    if(as===null||ae===null||ps===null||pe===null) continue;
+    if(ae<as) ae+=1440;
+    if(pe<ps) pe+=1440;
+    const aw=calculateRecord(actual).work;
+    const pw=calculateRecord(plan).work;
+    absStart+=Math.abs(as-ps);
+    absEnd+=Math.abs(ae-pe);
+    absWork+=Math.abs(aw-pw);
+    planWorkSum+=Math.max(1,pw);
+    n++;
+  }
+  return {
+    n,
+    avgStart:n?absStart/n:null,
+    avgEnd:n?absEnd/n:null,
+    avgWork:n?absWork/n:null,
+    accuracy:n?Math.max(0,Math.min(100,(1-absWork/planWorkSum)*100)):null
+  };
+}
+
+function weekdayPatterns(d){
+  const names=["일","월","화","수","목","금","토"];
+  const rows=[1,2,3,4,5].map(day=>({day,label:names[day],starts:[],works:[]}));
+  const map=Object.fromEntries(rows.map(r=>[r.day,r]));
+  const y=d.getFullYear(),m=d.getMonth();
+  for(let i=1;i<=daysInMonth(d);i++){
+    const date=new Date(y,m,i);
+    const dow=date.getDay();
+    if(!map[dow]) continue;
+    const rec=recordAt(date,"actual");
+    if(!workActualReady(rec)) continue;
+    const s=toMinutes(rec.start);
+    const w=calculateRecord(rec).work;
+    if(s!==null) map[dow].starts.push(s);
+    map[dow].works.push(w);
+  }
+  return rows.map(r=>({
+    label:r.label,
+    n:r.works.length,
+    avgStart:r.starts.length?r.starts.reduce((a,v)=>a+v,0)/r.starts.length:null,
+    avgWork:r.works.length?r.works.reduce((a,v)=>a+v,0)/r.works.length:null,
+    medWork:median(r.works)
+  }));
+}
+
+function mixedForecast(d,goal){
+  const y=d.getFullYear(),m=d.getMonth();
+  const now=new Date();
+  const sameMonth=now.getFullYear()===y && now.getMonth()===m;
+  const isPast=(y<now.getFullYear()) || (y===now.getFullYear() && m<now.getMonth());
+  const isFuture=(y>now.getFullYear()) || (y===now.getFullYear() && m>now.getMonth());
+
+  if(isPast){
+    const actual=actualTotalsForMonth(d);
+    return {
+      mode:"past",
+      reached:actual.net>=goal,
+      projected:actual.net,
+      day:null,
+      actualNet:actual.net
+    };
+  }
+
+  const resolver=day=>{
+    const actual=recordAt(day,"actual");
+    if(meaningfulActual(actual)) return actual;
+    return recordAt(day,"plan") || ensureRecord(day).plan;
+  };
+
+  let hitDay=null;
+  for(let i=1;i<=daysInMonth(d);i++){
+    const t=totalsForMonthByResolver(d,resolver,i);
+    if(t.net>=goal){hitDay=i;break;}
+  }
+  const projected=totalsForMonthByResolver(d,resolver).net;
+  const actualNow=actualTotalsForMonth(d).net;
+
+  let remainingWorkdays=0;
+  const startDay=sameMonth ? now.getDate()+1 : 1;
+  for(let i=startDay;i<=daysInMonth(d);i++){
+    const day=new Date(y,m,i);
+    const p=recordAt(day,"plan") || ensureRecord(day).plan;
+    if(p && !["off","annual","dday"].includes(p.type||"work")) remainingWorkdays++;
+  }
+
+  return {
+    mode:isFuture?"future":"current",
+    reached:actualNow>=goal,
+    projected,
+    day:hitDay,
+    actualNet:actualNow,
+    remainingWorkdays
+  };
+}
+
+function sixMonthTrend(d){
+  const out=[];
+  for(let offset=5;offset>=0;offset--){
+    const md=new Date(d.getFullYear(),d.getMonth()-offset,1);
+    const a=actualMonthAnalytics(md);
+    const t=actualTotalsForMonth(md);
+    out.push({
+      label:`${String(md.getFullYear()).slice(2)}.${pad(md.getMonth()+1)}`,
+      avgStart:a.avgStart,
+      work:t.total,
+      net:t.net,
+      early7:a.earlyBefore7,
+      early8:a.earlyBefore8,
+      late20:a.lateAfter20,
+      late21:a.lateAfter21,
+      has:a.startsCount>0 || t.total>0 || t.net>0
+    });
+  }
+  return out;
+}
+
+function renderAdvancedInsights(){
+  const d=currentMonth;
+  document.getElementById("insightsTitle").textContent=
+    `${d.getFullYear()}년 ${d.getMonth()+1}월 근무 인사이트`;
+
+  // 1) start-time impact
+  const buckets=earlyArrivalImpact(d);
+  const bucketBox=document.getElementById("earlyImpactBuckets");
+  bucketBox.innerHTML="";
+  const maxAvg=Math.max(1,...buckets.filter(b=>b.avg!==null).map(b=>b.avg));
+  buckets.forEach(b=>{
+    const row=document.createElement("div");
+    row.className="bucket-row";
+    const width=b.avg===null?0:Math.max(4,b.avg/maxAvg*100);
+    row.innerHTML=`<div class="bucket-label">${b.label}</div>
+      <div class="bucket-track"><div class="bucket-fill" style="width:${width}%"></div></div>
+      <div class="bucket-value">${b.avg===null?"-":hm(b.avg)} · ${b.n}일</div>`;
+    bucketBox.appendChild(row);
+  });
+  const earlyGroups=buckets.slice(0,2).filter(b=>b.n>0);
+  const lateGroups=buckets.slice(2).filter(b=>b.n>0);
+  const earlyWorks=earlyGroups.flatMap(b=>b.works);
+  const lateWorks=lateGroups.flatMap(b=>b.works);
+  const earlyAvg=earlyWorks.length?earlyWorks.reduce((a,v)=>a+v,0)/earlyWorks.length:null;
+  const lateAvg=lateWorks.length?lateWorks.reduce((a,v)=>a+v,0)/lateWorks.length:null;
+  if(earlyAvg!==null && lateAvg!==null && earlyWorks.length>=2 && lateWorks.length>=2){
+    const delta=Math.round(earlyAvg-lateAvg);
+    document.getElementById("earlyImpactMain").textContent=
+      delta>=0 ? `조기출근일 +${formatMinutes(delta)}` : `조기출근일 ${formatMinutes(delta)}`;
+    document.getElementById("earlyImpactSub").textContent=
+      `08:00 이전 출근일의 평균 실근무를 08:00 이후와 비교 · 조기 ${earlyWorks.length}일 / 비교 ${lateWorks.length}일`;
+  }else{
+    document.getElementById("earlyImpactMain").textContent="표본 더 필요";
+    document.getElementById("earlyImpactSub").textContent=
+      "08:00 이전과 이후에 각각 2일 이상 실제 출퇴근 기록이 쌓이면 비교합니다.";
+  }
+
+  // 2) early efficiency
+  const eff=earlyEfficiency(d);
+  document.getElementById("earlyMinutesValue").textContent=eff.early?formatMinutes(eff.early):"-";
+  document.getElementById("retainedMinutesValue").textContent=eff.retained?formatMinutes(eff.retained):"-";
+  if(eff.rate!==null){
+    document.getElementById("earlyEfficiencyMain").textContent=`${Math.round(eff.rate*100)}%`;
+    document.getElementById("earlyEfficiencySub").textContent=
+      `계획보다 일찍 출근한 ${eff.days}일에서 조기출근 시간 중 실제 실근무 증가로 남은 비율`;
+  }else{
+    document.getElementById("earlyEfficiencyMain").textContent="-";
+    document.getElementById("earlyEfficiencySub").textContent="계획보다 일찍 출근한 실제 기록이 필요합니다.";
+  }
+
+  // 3) plan accuracy
+  const acc=planAccuracy(d);
+  document.getElementById("startErrorValue").textContent=acc.avgStart===null?"-":formatMinutes(acc.avgStart);
+  document.getElementById("endErrorValue").textContent=acc.avgEnd===null?"-":formatMinutes(acc.avgEnd);
+  if(acc.accuracy!==null){
+    document.getElementById("planAccuracyMain").textContent=`실근무 적중률 ${acc.accuracy.toFixed(1)}%`;
+    document.getElementById("planAccuracySub").textContent=
+      `${acc.n}일 비교 · 실근무 평균 오차 ${formatMinutes(acc.avgWork)}`;
+  }else{
+    document.getElementById("planAccuracyMain").textContent="-";
+    document.getElementById("planAccuracySub").textContent="계획과 실제 출퇴근이 모두 있는 날부터 계산합니다.";
+  }
+
+  // 4) weekday pattern
+  const weekdayBody=document.getElementById("weekdayPatternBody");
+  weekdayBody.innerHTML="";
+  weekdayPatterns(d).forEach(r=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${r.label}</td><td>${r.n}일</td>
+      <td>${r.avgStart===null?"-":minutesToClock(r.avgStart)}</td>
+      <td>${r.avgWork===null?"-":hm(r.avgWork)}</td>
+      <td>${r.medWork===null?"-":hm(r.medWork)}</td>`;
+    weekdayBody.appendChild(tr);
+  });
+
+  // 5) goal forecast
+  const goal=getMonthlyGoal(d);
+  const fc=mixedForecast(d,goal);
+  const goalMain=document.getElementById("goalForecastMain");
+  const goalSub=document.getElementById("goalForecastSub");
+  if(fc.mode==="past"){
+    goalMain.textContent=fc.reached?"목표 달성":"목표 미달";
+    goalSub.textContent=`실제 세후 OT ${money(fc.projected)} · 목표 ${money(goal)}`;
+  }else if(fc.reached){
+    goalMain.textContent="이미 목표 달성 ✓";
+    goalSub.textContent=`현재 실제 누적 ${money(fc.actualNet)} · 목표 ${money(goal)}`;
+  }else if(fc.day){
+    goalMain.textContent=`${d.getMonth()+1}/${fc.day} 달성 예상`;
+    goalSub.textContent=`현재까지 실제 + 이후 계획 기준 · 월말 예상 ${money(fc.projected)}`;
+  }else{
+    const gap=Math.max(0,goal-fc.projected);
+    const netPerMinute=hourlyRateForMonth(currentMonth)*1.5*0.65/60;
+    const addMin=Math.ceil(gap/netPerMinute);
+    const perDay=fc.remainingWorkdays>0?Math.ceil(addMin/fc.remainingWorkdays):addMin;
+    goalMain.textContent="현재 계획으로 미달 예상";
+    goalSub.textContent=
+      `월말 예상 ${money(fc.projected)} · ${money(gap)} 부족`+
+      (fc.remainingWorkdays>0?` · 남은 계획 근무일당 약 ${formatMinutes(perDay)} 추가 필요`:"");
+  }
+
+  // 7) time -> freedom
+  const a=actualMonthAnalytics(d);
+  const fullHours=Math.floor(a.earnedMinutes/60);
+  const rem=a.earnedMinutes%60;
+  document.getElementById("freedomMain").textContent=
+    a.earnedMinutes>0 ? `${formatMinutes(a.earnedMinutes)} 확보` : "0분";
+  document.getElementById("freedomSub").textContent=
+    a.earnedMinutes>0
+      ? `이론상 1시간 조기퇴근 ${fullHours}회${rem?` + ${rem}분`:""}와 같은 시간량 · 실제 조기퇴근을 권하는 의미는 아닙니다.`
+      : "08:30보다 빠른 실제 출근 기록이 생기면 자유시간 단위로 환산합니다.";
+
+  // 8) six-month trend
+  const trend=sixMonthTrend(d);
+  const trendBody=document.getElementById("trendBody");
+  trendBody.innerHTML="";
+  const maxNet=Math.max(1,...trend.map(x=>x.net||0));
+  trend.forEach(x=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${x.label}</td>
+      <td>${x.has && x.avgStart!==null?minutesToClock(x.avgStart):"-"}</td>
+      <td>${x.has?hm(x.work):"-"}</td>
+      <td><div class="trend-bar-wrap">
+        <div class="trend-bar"><span style="width:${x.has?Math.max(2,x.net/maxNet*100):0}%"></span></div>
+        <span>${x.has?money(x.net):"-"}</span>
+      </div></td>
+      <td>${x.has?`${x.early7}회`:"-"}</td>
+      <td>${x.has?`${x.early8}회`:"-"}</td>
+      <td>${x.has?`${x.late20}회`:"-"}</td>
+      <td>${x.has?`${x.late21}회`:"-"}</td>`;
+    trendBody.appendChild(tr);
+  });
+
+  // automatic strategy
+  const strategies=[];
+  if(fc.mode!=="past"){
+    if(fc.reached){
+      strategies.push(`<strong>OT 목표:</strong> 이미 목표를 달성했습니다. 추가근무는 월 최대근무 여유와 컨디션을 우선해 조절해도 됩니다.`);
+    }else if(fc.day){
+      strategies.push(`<strong>OT 목표:</strong> 현재 계획을 유지하면 ${d.getMonth()+1}/${fc.day} 전후 목표 달성이 예상됩니다.`);
+    }else{
+      const gap=Math.max(0,goal-fc.projected);
+      const netPerMinute=hourlyRateForMonth(currentMonth)*1.5*0.65/60;
+      const addMin=Math.ceil(gap/netPerMinute);
+      const perDay=fc.remainingWorkdays>0?Math.ceil(addMin/fc.remainingWorkdays):addMin;
+      strategies.push(`<strong>OT 목표:</strong> 현재 계획만으로는 부족합니다.${fc.remainingWorkdays>0?` 남은 계획 근무일마다 약 ${formatMinutes(perDay)}씩 추가하면 목표에 가까워집니다.`:""}`);
+    }
+  }else{
+    strategies.push(`<strong>월 결과:</strong> 선택한 달의 실제 세후 OT는 ${money(fc.projected)}였습니다.`);
+  }
+
+  if(earlyAvg!==null && lateAvg!==null && earlyWorks.length>=2 && lateWorks.length>=2){
+    const delta=Math.round(earlyAvg-lateAvg);
+    if(delta>=30){
+      strategies.push(`<strong>조기출근:</strong> 08:00 이전 출근일의 실근무가 08:00 이후보다 평균 ${formatMinutes(delta)} 길었습니다. 지금 데이터에서는 조기출근이 근무시간 확보에 효과가 있습니다.`);
+    }else if(delta<=-30){
+      strategies.push(`<strong>조기출근:</strong> 아직은 08:00 이전 출근이 실근무 증가로 이어지지 않았습니다. 퇴근·제외시간 패턴을 함께 보는 편이 좋습니다.`);
+    }else{
+      strategies.push(`<strong>조기출근:</strong> 출근시간대별 실근무 차이가 아직 크지 않습니다. 표본이 더 쌓이면 다시 판단하는 것이 좋습니다.`);
+    }
+  }else{
+    strategies.push(`<strong>조기출근:</strong> 08:00 이전/이후 실제 기록이 각각 2일 이상 쌓이면 조기출근 효과를 평가할 수 있습니다.`);
+  }
+
+  if(acc.accuracy!==null){
+    if(acc.accuracy>=95){
+      strategies.push(`<strong>계획:</strong> 실근무 계획 적중률이 ${acc.accuracy.toFixed(1)}%로 높습니다. 현재 계획 방식이 실제 근무 패턴을 잘 반영하고 있습니다.`);
+    }else if(acc.accuracy>=90){
+      strategies.push(`<strong>계획:</strong> 적중률 ${acc.accuracy.toFixed(1)}%입니다. 평균 실근무 오차 ${formatMinutes(acc.avgWork)} 정도를 감안해 계획하면 더 정확해집니다.`);
+    }else{
+      strategies.push(`<strong>계획:</strong> 계획과 실제 차이가 비교적 큽니다. 최근 실제 퇴근시간을 기준으로 기본 계획을 조정할 가치가 있습니다.`);
+    }
+  }
+
+  const strategyBox=document.getElementById("strategyList");
+  strategyBox.innerHTML="";
+  strategies.slice(0,3).forEach(s=>{
+    const div=document.createElement("div");
+    div.className="strategy-item";
+    div.innerHTML=s;
+    strategyBox.appendChild(div);
+  });
+}
+
+
+function normalizeTimeInput(value){
+  const raw=String(value??"").trim();
+  if(!raw) return "";
+
+  let m=raw.match(/^(\d{1,2}):(\d{1,2})$/);
+  if(m){
+    const h=Number(m[1]), min=Number(m[2]);
+    if(h>=0 && h<=23 && min>=0 && min<=59){
+      return `${pad(h)}:${pad(min)}`;
+    }
+    return raw;
+  }
+
+  const digits=raw.replace(/\D/g,"");
+
+  if(digits.length===1 || digits.length===2){
+    const h=Number(digits);
+    if(h>=0 && h<=23) return `${pad(h)}:00`;
+  }
+
+  if(digits.length===3){
+    const h=Number(digits.slice(0,1));
+    const min=Number(digits.slice(1));
+    if(h>=0 && h<=23 && min>=0 && min<=59){
+      return `${pad(h)}:${pad(min)}`;
+    }
+  }
+
+  if(digits.length===4){
+    const h=Number(digits.slice(0,2));
+    const min=Number(digits.slice(2));
+    if(h>=0 && h<=23 && min>=0 && min<=59){
+      return `${pad(h)}:${pad(min)}`;
+    }
+  }
+
+  return raw;
+}
+
+function setupKeyboardTimeInputs(){
+  ["startTime","endTime"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el || el.dataset.keyboardTimeReady==="1") return;
+    el.dataset.keyboardTimeReady="1";
+
+    el.addEventListener("focus",()=>{
+      requestAnimationFrame(()=>el.select?.());
+    });
+
+    el.addEventListener("input",()=>{
+      const digits=el.value.replace(/\D/g,"");
+      if(digits.length===4){
+        const normalized=normalizeTimeInput(digits);
+        if(/^\d{2}:\d{2}$/.test(normalized)){
+          el.value=normalized;
+        }
+      }
+    });
+
+    el.addEventListener("blur",()=>{
+      el.value=normalizeTimeInput(el.value);
+      if(typeof updatePreview==="function") updatePreview();
+    });
+
+    el.addEventListener("keydown",e=>{
+      if(e.key==="Enter"){
+        el.value=normalizeTimeInput(el.value);
+      }
+    });
+  });
 }
 
 function render(){
@@ -1292,7 +2154,11 @@ function render(){
 
   document.getElementById("planNet").textContent=money(plan.net);
   document.getElementById("actualNet").textContent=money(actual.net);
-  document.getElementById("hourlyRateDisplay").textContent=money(state.hourly);
+  document.getElementById("hourlyRateDisplay").textContent=money(hourlyRateForMonth(currentMonth));
+  document.getElementById("hourlyRateNote").textContent=
+    hourlyRateNoteForMonth(currentMonth)
+      ? ` · ${hourlyRateNoteForMonth(currentMonth)}`
+      : "";
   document.getElementById("planGross").textContent=`세전 ${money(plan.gross)}`;
   document.getElementById("actualGross").textContent=`세전 ${money(actual.gross)}`;
 
@@ -1305,20 +2171,27 @@ function render(){
   document.getElementById("planGoalHint").textContent=planGoalHintWithLimit(plan,monthlyGoal);
   document.getElementById("actualGoalHint").textContent=goalHint(actual,monthlyGoal);
 
-  document.getElementById("excludeTotal").textContent=hm(plan.extraTotal);
-  const exRatio=Math.min(100,plan.extraTotal/(20*60)*100);
+  const excludeSource=viewMode==="plan"?plan:actual;
+  const extraExclude=excludeSource.extraTotal||0;
+  const activityTotal=excludeSource.activityTotal||0;
+
+  document.getElementById("excludeLabel").textContent=`월 추가 제외시간 · ${viewMode==="plan"?"계획":"실제"}`;
+  document.getElementById("excludeTotal").textContent=hm(extraExclude);
+  document.getElementById("activityTotalHint").textContent=`기록된 활동시간 ${hm(activityTotal)}`;
+
+  const exRatio=Math.min(100,extraExclude/(20*60)*100);
   const exBar=document.getElementById("excludeBar");
   exBar.style.width=exRatio+"%";
   const exHint=document.getElementById("excludeHint");
-  if(plan.extraTotal>20*60){
+  if(extraExclude>20*60){
     exBar.style.background="var(--bad)";
-    exHint.textContent=`20h 초과 · ${formatMinutes(plan.extraTotal-20*60)}`;
-  }else if(plan.extraTotal>=18*60){
+    exHint.textContent=`20h 초과 · ${formatMinutes(extraExclude-20*60)}`;
+  }else if(extraExclude>=18*60){
     exBar.style.background="var(--warn)";
-    exHint.textContent=`주의 · ${formatMinutes(20*60-plan.extraTotal)} 남음`;
+    exHint.textContent=`주의 · ${formatMinutes(20*60-extraExclude)} 남음`;
   }else{
     exBar.style.background="var(--accent)";
-    exHint.textContent=`20h까지 ${formatMinutes(20*60-plan.extraTotal)} 여유`;
+    exHint.textContent=`20h까지 ${formatMinutes(20*60-extraExclude)} 여유`;
   }
 
   document.getElementById("defaultStart").value=state.defaultStart;
@@ -1333,6 +2206,7 @@ function render(){
   renderToday();
   renderCalendar();
   renderMonthlyReport();
+  renderAdvancedInsights();
 }
 
 function renderToday(){
@@ -1352,12 +2226,13 @@ function renderToday(){
   }
 
   const diff=base-actualStart;
-  const netPerMinute=state.hourly*1.5*(0.65)/60;
+  const netPerMinute=netOtHourlyForMonth(currentMonth)/60;
   earned.textContent=(diff>0?"+":"")+formatMinutes(diff);
   earned.className="big "+(diff>=0?"positive":"negative");
 
   if(diff>0){
-    detail.innerHTML=`같은 퇴근시간이면 세후 약 <b>${money(diff*netPerMinute)}</b> 가치 · 1시간당 ₩29,738 기준 · 또는 다른 평일에 약 <b>${formatMinutes(diff)}</b> 일찍 퇴근 가능`;
+    const todayRate=hourlyRateForMonth(currentMonth);
+      detail.innerHTML=`같은 퇴근시간이면 실근무를 <b>${formatMinutes(diff)}</b> 더 확보 · 세후 OT 가치로는 약 <b>${money(diff*netPerMinute)}</b> · 선택월 적용 시급 ${money(todayRate)} · 세후 OT 1시간 약 ${money(netOtHourlyForMonth(currentMonth))}`;
   }else if(diff<0){
     detail.textContent=`기본 계획보다 ${formatMinutes(-diff)} 늦게 출근 · 다른 날에 그만큼 보완 필요`;
   }else{
@@ -1377,18 +2252,29 @@ function activityTagClass(name){
 function calendarActivityTags(rec){
   const acts=(rec?.activities||[])
     .filter(a=>Number(a.minutes||0)>0)
-    .map(a=>({name:a.name||"기타",minutes:Number(a.minutes||0)}));
+    .map(a=>({name:a.name||"기타",minutes:Number(a.minutes||0),startTime:a.startTime||"",endTime:a.endTime||""}));
 
-  if(!acts.length) return "";
+  const isGwp=rec?.type==="gwp";
+  if(!acts.length && !isGwp) return "";
 
+  // GWP는 근태 태그로 따로 표시하고,
+  // 제외시간 태그는 기존처럼 최대 3개까지 표시.
   const visible=acts.slice(0,3);
   let html='<div class="day-tags">';
+
+  if(isGwp){
+    html+=`<span class="day-tag tag-gwp" title="GWP 근태 · 월 필수근무시간 2시간 차감">GWP</span>`;
+  }
+
   visible.forEach(a=>{
-    html+=`<span class="day-tag ${activityTagClass(a.name)}" title="${a.name} ${a.minutes}분">${a.name}</span>`;
+    const timeText=(a.startTime&&a.endTime)?` · ${a.startTime}~${a.endTime}`:"";
+    html+=`<span class="day-tag ${activityTagClass(a.name)}" title="${a.name}${timeText} · ${a.minutes}분">${a.name}</span>`;
   });
+
   if(acts.length>3){
     html+=`<span class="day-tag tag-more">+${acts.length-3}</span>`;
   }
+
   html+='</div>';
   return html;
 }
@@ -1418,8 +2304,8 @@ function renderCalendar(){
     e.className="day"+(hname?" holiday":"");
 
     const labels={
-      work:"", annual:"연차", dday:"D-Day", education:"교육",
-      business:"출장", holidayWork:"공휴일OT", weekendWork:"주말OT", off:"비근무"
+      work:"", annual:"연차", dday:"D-Day", education:"교육", healthcheck:"건강검진",
+      business:"출장", gwp:"GWP", holidayWork:"공휴일OT", weekendWork:"주말OT", off:"비근무"
     };
     const label=labels[rec.type]||"";
 
@@ -1440,6 +2326,7 @@ function renderCalendar(){
 }
 
 function openDay(d){
+  setupKeyboardTimeInputs();
   selectedDate=d;
   const hname=holidayName(d);
   document.getElementById("modalTitle").textContent=
@@ -1455,7 +2342,7 @@ function loadModalRecord(){
 
   document.getElementById("dayType").value=rec.type||"work";
 
-  const needsTime=!["annual","dday","off","education"].includes(rec.type);
+  const needsTime=!["annual","dday","off","education","healthcheck"].includes(rec.type);
   document.getElementById("startTime").value=(rec.start!==undefined && rec.start!==null)?rec.start:(needsTime?state.defaultStart:"");
   document.getElementById("endTime").value=(rec.end!==undefined && rec.end!==null)?rec.end:(needsTime?state.defaultEnd:"");
 
@@ -1476,7 +2363,7 @@ function renderActivities(list){
   list.forEach(a=>{
     const row=document.createElement("div");
     row.className="activity";
-    const names=["중식","조식","석식","요가","헬스장","개인용무","외출","기타"];
+    const names=["중식","조식","석식","요가","헬스장","개인용무","병원","외출","기타"];
     row.innerHTML=`
       <div class="field">
         <label>항목</label>
@@ -1493,6 +2380,14 @@ function renderActivities(list){
           <option value="1" ${a.useLegal?"selected":""}>예</option>
         </select>
       </div>
+      <div class="act-time-wrap">
+        <span class="act-time-label">기록 시간 (선택 · 둘 다 입력하면 분 자동 계산)</span>
+        <div class="act-time-row">
+          <input class="act-time act-start" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="시작 17:15" value="${String(a.startTime||"").replace(/"/g,"&quot;")}" />
+          <span class="act-time-arrow">→</span>
+          <input class="act-time act-end" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="종료 17:25" value="${String(a.endTime||"").replace(/"/g,"&quot;")}" />
+        </div>
+      </div>
       <div class="field act-reason-wrap">
         <label>사유</label>
         <input class="act-reason" type="text" maxlength="40" placeholder="간단한 사유" value="${String(a.reason||"").replace(/"/g,"&quot;")}" />
@@ -1507,7 +2402,45 @@ function renderActivities(list){
     syncReasonVisibility();
     nameSelect.addEventListener("change",()=>{
       syncReasonVisibility();
+
+      // 새 제외시간(0분)에서 조식/중식을 선택하면 기본 10분.
+      // 기존 평일 기본 중식 30분처럼 이미 값이 있으면 덮어쓰지 않는다.
+      const minInput=row.querySelector(".act-min");
+      if((nameSelect.value==="조식" || nameSelect.value==="중식") && Number(minInput.value||0)===0){
+        minInput.value="10";
+      }
+
       updatePreview();
+    });
+
+    const actStart=row.querySelector(".act-start");
+    const actEnd=row.querySelector(".act-end");
+    const actMinutes=row.querySelector(".act-min");
+
+    const syncActivityMinutesFromTimes=(normalize=false)=>{
+      if(normalize){
+        actStart.value=normalizeTimeInput(actStart.value);
+        actEnd.value=normalizeTimeInput(actEnd.value);
+      }
+      const s=toMinutes(actStart.value);
+      const e=toMinutes(actEnd.value);
+      if(s!==null && e!==null){
+        actMinutes.value=duration(actStart.value,actEnd.value);
+      }
+      updatePreview();
+    };
+
+    [actStart,actEnd].forEach(el=>{
+      el.addEventListener("focus",()=>requestAnimationFrame(()=>el.select?.()));
+      el.addEventListener("input",()=>{
+        const digits=el.value.replace(/\D/g,"");
+        if(digits.length===4){
+          const normalized=normalizeTimeInput(digits);
+          if(/^\d{2}:\d{2}$/.test(normalized)) el.value=normalized;
+        }
+        syncActivityMinutesFromTimes(false);
+      });
+      el.addEventListener("blur",()=>syncActivityMinutesFromTimes(true));
     });
 
     row.querySelector(".delete-act").addEventListener("click",()=>{
@@ -1531,6 +2464,8 @@ function collectActivities(){
     name:row.querySelector(".act-name").value,
     minutes:Number(row.querySelector(".act-min").value||0),
     useLegal:row.querySelector(".act-legal").value==="1",
+    startTime:normalizeTimeInput(row.querySelector(".act-start").value),
+    endTime:normalizeTimeInput(row.querySelector(".act-end").value),
     reason:row.querySelector(".act-name").value==="기타"
       ? row.querySelector(".act-reason").value.trim()
       : ""
@@ -1542,8 +2477,8 @@ function modalTempRecord(){
   const type=document.getElementById("dayType").value;
   return {
     type,
-    start:document.getElementById("startTime").value,
-    end:document.getElementById("endTime").value,
+    start:normalizeTimeInput(document.getElementById("startTime").value),
+    end:normalizeTimeInput(document.getElementById("endTime").value),
     activities:usesDefaultLunch(type)?collectActivities():[]
   };
 }
@@ -1790,7 +2725,7 @@ document.addEventListener("keydown",e=>{
 document.getElementById("recordMode").addEventListener("change",loadModalRecord);
 document.getElementById("dayType").addEventListener("change",()=>{
   const type=document.getElementById("dayType").value;
-  const needsTime=!["annual","dday","education","off"].includes(type);
+  const needsTime=!["annual","dday","education","healthcheck","off"].includes(type);
 
   document.getElementById("startTime").disabled=!needsTime;
   document.getElementById("endTime").disabled=!needsTime;
@@ -1902,7 +2837,7 @@ function migrateNonWorkActivities(){
     ["plan","actual"].forEach(mode=>{
       const rec=day?.[mode];
       if(!rec) return;
-      if(["annual","dday","education","business","holidayWork","weekendWork","off"].includes(rec.type)){
+      if(["annual","dday","education","healthcheck","business","holidayWork","weekendWork","off"].includes(rec.type)){
         rec.activities=[];
       }
     });
